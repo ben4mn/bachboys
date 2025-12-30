@@ -11,8 +11,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-bachboys}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Not exposed to host - only accessible within Docker network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bachboys}"]
       interval: 10s
@@ -27,7 +26,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: 3001
+      PORT: 3031
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${DB_USER:-bachboys}
@@ -35,8 +34,12 @@ services:
       DB_NAME: ${DB_NAME:-bachboys}
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-super-secret-refresh-key-change-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:3031}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@bachboys.app}
     ports:
-      - "3001:3001"
+      - "3031:3031"
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,7 +54,9 @@ services:
     container_name: bachboys-frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3001/api
+      # Use relative URL - Vite proxy forwards /api to backend
+      VITE_API_URL: ${VITE_API_URL:-/api}
+      VITE_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
     ports:
       - "5173:5173"
     depends_on:
@@ -60,6 +65,7 @@ services:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
       - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
     command: npm run dev -- --host
 
 volumes:

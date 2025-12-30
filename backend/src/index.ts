@@ -19,12 +19,28 @@ import adminRoutes from './routes/admin/index.js';
 
 const app = express();
 
+// Trust proxy (for nginx reverse proxy)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: config.cors.origin,
+
+// CORS configuration - support multiple origins
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = config.cors.origin.split(',').map(o => o.trim());
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

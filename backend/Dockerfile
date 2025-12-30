@@ -10,7 +10,7 @@ RUN npm install
 COPY . .
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3031
 
 # Default command (overridden in docker-compose for dev)
 CMD ["npm", "run", "dev"]

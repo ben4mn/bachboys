@@ -66,13 +66,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { checkAuth, isLoading } = useAuthStore();
+  const { checkAuth, isLoading, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Only check auth after hydration completes
+    if (_hasHydrated) {
+      checkAuth();
+    }
+  }, [checkAuth, _hasHydrated]);
 
-  if (isLoading) {
+  // Show loading while hydrating or checking auth
+  if (!_hasHydrated || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" />

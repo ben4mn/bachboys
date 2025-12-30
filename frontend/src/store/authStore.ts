@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import * as authApi from '../api/auth';
 import type { User, LoginCredentials, RegisterData } from '../types';
 
@@ -7,6 +7,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  _hasHydrated: boolean;
   error: string | null;
 
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -14,6 +15,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearError: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,7 +24,12 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
       error: null,
+
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
+      },
 
       login: async (credentials) => {
         set({ isLoading: true, error: null });
@@ -67,9 +74,15 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
+        // Skip if already authenticated (prevents race condition after login)
+        const currentState = get();
+        if (currentState.isAuthenticated && currentState.user) {
+          return;
+        }
+
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-          set({ user: null, isAuthenticated: false });
+          set({ user: null, isAuthenticated: false, isLoading: false });
           return;
         }
 
@@ -88,10 +101,20 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        // After hydration completes, set _hasHydrated to true
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
+
+// Helper to wait for hydration in components
+export const useHasHydrated = () => {
+  return useAuthStore((state) => state._hasHydrated);
+};

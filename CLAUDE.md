@@ -187,15 +187,18 @@ npx web-push generate-vapid-keys
 - [x] Notification sending from admin
 - [x] Offline indicator component
 
-### Remaining Tasks (Phase 7: Polish & Deploy)
+#### Phase 7: Polish & Deploy ✅
+- [x] Generate real VAPID keys and add to .env
+- [x] Create PWA icons (pwa-192x192.png, pwa-512x512.png, apple-touch-icon.png)
+- [x] Configure backend for reverse proxy (trust proxy, CORS)
+- [x] Update frontend for relative API URLs in production
+- [x] Database seed script with test data
 
-- [ ] Generate real VAPID keys and add to .env
-- [ ] Create PWA icons (pwa-192x192.png, pwa-512x512.png, apple-touch-icon.png)
-- [ ] Test complete flow end-to-end
-- [ ] Production Docker config refinement
-- [ ] SSL/HTTPS setup (required for push notifications)
+### Remaining Tasks
+- [ ] SSL/HTTPS setup via Nginx Proxy Manager (required for push notifications)
 - [ ] Mobile-first responsive polish
 - [ ] Loading/error state improvements
+- [ ] Production environment testing
 
 ---
 
@@ -239,3 +242,79 @@ NODE_ENV=development
 - Clean modern light theme with primary blue accent (#3b82f6)
 - Touch-friendly buttons and gestures
 - Offline-capable with cached API responses
+
+---
+
+## Nginx Proxy Manager Setup
+
+To host BachBoys with Nginx Proxy Manager:
+
+### 1. Add Proxy Host
+
+Create a new proxy host in NPM:
+
+| Field | Value |
+|-------|-------|
+| Domain Names | `bachboys.yourdomain.com` |
+| Scheme | `http` |
+| Forward Hostname/IP | `bachboys-frontend` (or host IP) |
+| Forward Port | `5173` |
+| Websockets Support | ✅ Enabled |
+| Block Common Exploits | ✅ Enabled |
+
+### 2. Add Custom Location for API
+
+In the same proxy host, go to **Custom Locations** and add:
+
+| Field | Value |
+|-------|-------|
+| Location | `/api` |
+| Scheme | `http` |
+| Forward Hostname/IP | `bachboys-backend` (or host IP) |
+| Forward Port | `3031` |
+
+### 3. SSL Certificate
+
+1. Go to the **SSL** tab
+2. Select "Request a new SSL Certificate"
+3. Enable "Force SSL" and "HTTP/2 Support"
+4. Enter your email for Let's Encrypt
+
+### 4. Update Environment
+
+After SSL is configured, update `.env`:
+
+```bash
+# Update CORS to include your domain
+CORS_ORIGIN=https://bachboys.yourdomain.com
+
+# For production
+NODE_ENV=production
+```
+
+Then restart: `docker-compose up -d`
+
+---
+
+## Test Accounts
+
+After running `docker exec bachboys-backend npm run seed`:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| Groom | `nick` | `groom123` |
+| Attendee | `mike` | `test123` |
+| Attendee | `dave` | `test123` |
+| Attendee | `chris` | `test123` |
+| Attendee | `tom` | `test123` |
+
+---
+
+## Ports Used
+
+| Service | Port | Notes |
+|---------|------|-------|
+| Frontend | 5173 | Vite dev server |
+| Backend API | 3031 | Express server |
+| PostgreSQL | (internal) | Not exposed to host |
