@@ -46,10 +46,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (isAuthenticated) {
-    return <Navigate to="/schedule" replace />;
+    // Redirect admins to admin panel, regular users to schedule
+    return <Navigate to={user?.is_admin ? "/admin" : "/schedule"} replace />;
   }
 
   return <>{children}</>;
