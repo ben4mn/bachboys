@@ -24,6 +24,7 @@ export interface EventInput {
   is_mandatory: boolean;
   total_cost: number;
   split_type: 'even' | 'custom' | 'fixed';
+  exclude_groom?: boolean;
   category?: string;
   image_url?: string;
   notes?: string;

@@ -47,6 +47,7 @@ export const eventSchema = z.object({
   is_mandatory: z.boolean().default(false),
   total_cost: z.number().min(0).default(0),
   split_type: z.enum(['even', 'custom', 'fixed']).default('even'),
+  exclude_groom: z.boolean().default(true),
   category: z.string().optional(),
   image_url: z.string().url().optional(),
   notes: z.string().optional(),

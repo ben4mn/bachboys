@@ -108,17 +108,18 @@ async function seed() {
 
     // Friday Apr 3: F1 Go Kart (optional)
     const gokartTotal = 15 * 100; // $100/person x 15
+    const gokartPerPerson = Math.round((gokartTotal / GUEST_COUNT) * 100) / 100;
     const gokartResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id`,
       [
         'F1 Go Kart Racing',
-        '3 races. $100 per person. Groom races free.',
+        '3 races. ~$100 per person. Groom races free.',
         'Las Vegas',
         '2026-04-03T19:00:00-07:00',
         '2026-04-03T21:00:00-07:00',
-        false, gokartTotal, 'custom', 'activity', benId,
+        false, gokartTotal, 'even', true, 'activity', benId,
       ]
     );
     const gokartEventId = gokartResult.rows[0].id;
@@ -126,11 +127,11 @@ async function seed() {
     // Gokart costs for pre-created users
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [gokartEventId, nickId, 0, 'Groom races free']
+      [gokartEventId, nickId, 0, 'Groom — covered by the crew']
     );
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [gokartEventId, benId, Math.round((gokartTotal / GUEST_COUNT) * 100) / 100, 'Go kart split']
+      [gokartEventId, benId, gokartPerPerson, `$${gokartTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Saturday Apr 4: Poker at VRBO
@@ -162,9 +163,10 @@ async function seed() {
 
     // Saturday Apr 4: Dinner at Cote
     const coteTotal = 15 * 100; // ~$100+/person
+    const cotePerPerson = Math.round((coteTotal / GUEST_COUNT) * 100) / 100;
     const coteResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id`,
       [
         'Dinner at Cote',
@@ -172,7 +174,7 @@ async function seed() {
         'Cote Las Vegas',
         '2026-04-04T19:00:00-07:00',
         '2026-04-04T21:00:00-07:00',
-        true, coteTotal, 'custom', 'food', benId,
+        true, coteTotal, 'even', true, 'food', benId,
       ]
     );
     const coteEventId = coteResult.rows[0].id;
@@ -180,26 +182,27 @@ async function seed() {
     // Cote costs for pre-created users
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [coteEventId, nickId, 0, 'Groom eats free']
+      [coteEventId, nickId, 0, 'Groom — covered by the crew']
     );
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [coteEventId, benId, Math.round((coteTotal / GUEST_COUNT) * 100) / 100, 'Dinner split']
+      [coteEventId, benId, cotePerPerson, `$${coteTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Saturday Apr 4: Empire Strips Back (optional)
     const empireTotal = 15 * 80; // $80/person
+    const empirePerPerson = Math.round((empireTotal / GUEST_COUNT) * 100) / 100;
     const empireResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id`,
       [
         'Empire Strips Back',
-        'Burlesque show. $80 per person. Groom gets in free.',
+        'Burlesque show. ~$80 per person. Groom gets in free.',
         'Las Vegas',
         '2026-04-04T21:30:00-07:00',
         '2026-04-04T23:30:00-07:00',
-        false, empireTotal, 'custom', 'party', benId,
+        false, empireTotal, 'even', true, 'party', benId,
       ]
     );
     const empireEventId = empireResult.rows[0].id;
@@ -207,11 +210,11 @@ async function seed() {
     // Empire costs for pre-created users
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [empireEventId, nickId, 0, 'Groom gets in free']
+      [empireEventId, nickId, 0, 'Groom — covered by the crew']
     );
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [empireEventId, benId, Math.round((empireTotal / GUEST_COUNT) * 100) / 100, 'Empire split']
+      [empireEventId, benId, empirePerPerson, `$${empireTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Sunday Apr 5: Check-out
@@ -229,8 +232,8 @@ async function seed() {
 
     // VRBO Accommodation (cost event spanning the trip)
     const vrboResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id`,
       [
         'VRBO Accommodation',
@@ -238,7 +241,7 @@ async function seed() {
         VRBO_LOCATION,
         '2026-04-03T16:00:00-07:00',
         '2026-04-05T10:00:00-07:00',
-        true, VRBO_TOTAL, 'custom', 'accommodation', benId,
+        true, VRBO_TOTAL, 'even', true, 'accommodation', benId,
       ]
     );
     const vrboEventId = vrboResult.rows[0].id;
@@ -246,11 +249,11 @@ async function seed() {
     // VRBO costs for pre-created users
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [vrboEventId, nickId, 0, 'Groom stays free']
+      [vrboEventId, nickId, 0, 'Groom — covered by the crew']
     );
     await client.query(
       `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [vrboEventId, benId, PER_PERSON_COST, 'VRBO split']
+      [vrboEventId, benId, PER_PERSON_COST, `$${VRBO_TOTAL} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     logger.info('Created all events with cost splits');

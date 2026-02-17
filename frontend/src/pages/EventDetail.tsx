@@ -7,6 +7,7 @@ import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { getEvent, updateRsvp } from '../api/events';
+import { useAuthStore } from '../store/authStore';
 import type { RsvpStatus } from '../types';
 
 const rsvpOptions: { status: RsvpStatus; label: string; icon: typeof Check }[] = [
@@ -18,6 +19,7 @@ const rsvpOptions: { status: RsvpStatus; label: string; icon: typeof Check }[] =
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['event', id],
@@ -97,12 +99,28 @@ export default function EventDetail() {
               </div>
             )}
 
-            {Number(user_cost) > 0 && (
+            {Number(event.total_cost) > 0 && (
               <div className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-gray-500" />
                 <div>
-                  <div className="font-medium">${Number(user_cost).toFixed(2)}</div>
-                  <div className="text-sm text-gray-600">Your share</div>
+                  {currentUser?.is_groom && event.exclude_groom ? (
+                    <>
+                      <div className="font-medium text-green-600">$0.00</div>
+                      <div className="text-sm text-gray-500">You're covered — the boys got you</div>
+                    </>
+                  ) : Number(user_cost) > 0 ? (
+                    <>
+                      <div className="font-medium">${Number(user_cost).toFixed(2)}</div>
+                      <div className="text-sm text-gray-500">
+                        Your share{event.exclude_groom ? ' · covers the groom' : ''}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-medium">${Number(event.total_cost).toFixed(0)} total</div>
+                      <div className="text-sm text-gray-500">Cost split pending</div>
+                    </>
+                  )}
                 </div>
               </div>
             )}

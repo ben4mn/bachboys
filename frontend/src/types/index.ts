@@ -24,6 +24,7 @@ export interface Event {
   is_mandatory: boolean;
   total_cost: number;
   split_type: SplitType;
+  exclude_groom: boolean;
   category: string | null;
   image_url: string | null;
   notes: string | null;

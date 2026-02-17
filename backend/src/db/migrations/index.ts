@@ -241,6 +241,11 @@ const migrations = [
       CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id);
     `,
   },
+  // 011: Add exclude_groom column to events
+  {
+    name: '011_add_exclude_groom',
+    up: `ALTER TABLE events ADD COLUMN IF NOT EXISTS exclude_groom BOOLEAN DEFAULT true;`,
+  },
 ];
 
 // Track migrations

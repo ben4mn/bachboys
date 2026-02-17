@@ -32,6 +32,7 @@ interface EventFormData {
   is_mandatory: boolean;
   total_cost: number;
   split_type: 'even' | 'custom' | 'fixed';
+  exclude_groom: boolean;
   category: string;
   notes: string;
 }
@@ -61,6 +62,7 @@ function EventForm({
         is_mandatory: event.is_mandatory,
         total_cost: event.total_cost,
         split_type: event.split_type,
+        exclude_groom: event.exclude_groom ?? true,
         category: event.category || '',
         notes: event.notes || '',
       }
@@ -76,6 +78,7 @@ function EventForm({
         is_mandatory: false,
         total_cost: 0,
         split_type: 'even' as const,
+        exclude_groom: true,
         category: '',
         notes: '',
       };
@@ -98,6 +101,7 @@ function EventForm({
         is_mandatory: data.is_mandatory,
         total_cost: Number(data.total_cost),
         split_type: data.split_type,
+        exclude_groom: data.exclude_groom,
         category: data.category || undefined,
         notes: data.notes || undefined,
       };
@@ -249,6 +253,18 @@ function EventForm({
                 <option value="fixed">Fixed Per Person</option>
               </select>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              {...register('exclude_groom')}
+              type="checkbox"
+              id="exclude_groom"
+              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <label htmlFor="exclude_groom" className="text-sm font-medium text-gray-700">
+              Exclude groom from cost (split among other guests)
+            </label>
           </div>
 
           <div>
@@ -549,7 +565,7 @@ export default function AdminEvents() {
                 )}
                 {Number(event.total_cost) > 0 && (
                   <p className="text-sm font-medium text-primary-600 mt-2">
-                    ${Number(event.total_cost).toFixed(2)} total ({event.split_type} split)
+                    ${Number(event.total_cost).toFixed(2)} total ({event.split_type} split{event.exclude_groom ? ', groom excluded' : ''})
                   </p>
                 )}
               </div>

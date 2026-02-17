@@ -31,6 +31,7 @@ export interface Event {
   split_type: SplitType;
   category: string | null;
   image_url: string | null;
+  exclude_groom: boolean;
   notes: string | null;
   created_by: string | null;
   created_at: Date;

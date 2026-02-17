@@ -74,8 +74,8 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
 
     const [event] = await query<Event>(
       `INSERT INTO events (title, description, location, location_url, start_time, end_time,
-                           is_mandatory, total_cost, split_type, category, image_url, notes, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                           is_mandatory, total_cost, split_type, exclude_groom, category, image_url, notes, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING *`,
       [
         data.title,
@@ -87,6 +87,7 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
         data.is_mandatory,
         data.total_cost,
         data.split_type,
+        data.exclude_groom ?? true,
         data.category || null,
         data.image_url || null,
         data.notes || null,
@@ -109,8 +110,8 @@ router.put('/events/:id', async (req: Request, res: Response, next: NextFunction
       `UPDATE events SET
          title = $1, description = $2, location = $3, location_url = $4,
          start_time = $5, end_time = $6, is_mandatory = $7, total_cost = $8,
-         split_type = $9, category = $10, image_url = $11, notes = $12, updated_at = NOW()
-       WHERE id = $13
+         split_type = $9, exclude_groom = $10, category = $11, image_url = $12, notes = $13, updated_at = NOW()
+       WHERE id = $14
        RETURNING *`,
       [
         data.title,
@@ -122,6 +123,7 @@ router.put('/events/:id', async (req: Request, res: Response, next: NextFunction
         data.is_mandatory,
         data.total_cost,
         data.split_type,
+        data.exclude_groom ?? true,
         data.category || null,
         data.image_url || null,
         data.notes || null,
@@ -197,10 +199,10 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
       throw new AppError('Event not found', 404);
     }
 
-    // Get confirmed attendees (excluding groom)
-    const attendees = await query<User>(
-      `SELECT * FROM users WHERE trip_status = 'confirmed' AND is_groom = false`
-    );
+    // Get confirmed attendees, conditionally excluding the groom
+    const attendees = event.exclude_groom
+      ? await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed' AND is_groom = false`)
+      : await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
 
     if (attendees.length === 0) {
       throw new AppError('No confirmed attendees to split costs', 400);
@@ -211,23 +213,30 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
     // Delete existing costs
     await query(`DELETE FROM event_costs WHERE event_id = $1`, [req.params.id]);
 
-    // Insert even split costs
+    // Build descriptive note
+    const note = event.exclude_groom
+      ? `$${Number(event.total_cost).toFixed(0)} ÷ ${attendees.length} guests (covers groom)`
+      : `Even split`;
+
+    // Insert costs for paying attendees
     for (const attendee of attendees) {
       await query(
         `INSERT INTO event_costs (event_id, user_id, amount, notes)
          VALUES ($1, $2, $3, $4)`,
-        [req.params.id, attendee.id, perPersonCost, 'Even split']
+        [req.params.id, attendee.id, perPersonCost, note]
       );
     }
 
-    // Set groom's cost to 0
-    const groom = await queryOne<User>(`SELECT * FROM users WHERE is_groom = true`);
-    if (groom) {
-      await query(
-        `INSERT INTO event_costs (event_id, user_id, amount, notes)
-         VALUES ($1, $2, 0, $3)`,
-        [req.params.id, groom.id, 'Groom - no charge']
-      );
+    // If excluding groom, add groom's $0 entry
+    if (event.exclude_groom) {
+      const groom = await queryOne<User>(`SELECT * FROM users WHERE is_groom = true`);
+      if (groom) {
+        await query(
+          `INSERT INTO event_costs (event_id, user_id, amount, notes)
+           VALUES ($1, $2, 0, $3)`,
+          [req.params.id, groom.id, 'Groom — covered by the crew']
+        );
+      }
     }
 
     const updatedCosts = await query<EventCost & { display_name: string }>(

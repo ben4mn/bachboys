@@ -118,7 +118,7 @@ export default function Payments() {
                       <div>
                         <div className="font-medium text-gray-900">{item.event_title}</div>
                         <div className="text-sm text-gray-500">
-                          {format(parseISO(item.event_date), 'MMM d')}
+                          {item.notes || format(parseISO(item.event_date), 'MMM d')}
                         </div>
                       </div>
                       <div className="font-semibold">{formatCurrency(item.amount)}</div>
