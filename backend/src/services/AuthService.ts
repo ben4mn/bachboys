@@ -150,7 +150,7 @@ export class AuthService {
   async login(username: string, password: string): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     // Find user
     const user = await queryOne<User>(
-      'SELECT * FROM users WHERE username = $1',
+      'SELECT * FROM users WHERE LOWER(username) = LOWER($1)',
       [username]
     );
 
