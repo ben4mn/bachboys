@@ -58,7 +58,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: ['bachboys.zyroi.com'],
+    allowedHosts: ['bachboys.zyroi.com', 'nicksbachparty.com', 'www.nicksbachparty.com'],
     proxy: {
       '/api': {
         target: 'http://bachboys-backend:3031',
