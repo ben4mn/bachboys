@@ -88,6 +88,10 @@ router.put('/:id', authenticate, async (req: Request, res: Response, next: NextF
       updates.push(`venmo_handle = $${paramIndex++}`);
       values.push(data.venmo_handle);
     }
+    if (data.photo_url !== undefined) {
+      updates.push(`photo_url = $${paramIndex++}`);
+      values.push(data.photo_url);
+    }
 
     if (updates.length === 0) {
       throw new AppError('No valid fields to update', 400);

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { LogOut, Check, Edit2, Settings } from 'lucide-react';
+import { LogOut, Check, Edit2, Settings, Camera } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
@@ -26,11 +26,40 @@ interface ProfileForm {
   venmo_handle: string;
 }
 
+function resizeImage(file: File, maxSize: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          if (w > maxSize) { h = (h * maxSize) / w; w = maxSize; }
+        } else {
+          if (h > maxSize) { w = (w * maxSize) / h; h = maxSize; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function Profile() {
-  const { user, logout, checkAuth } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, reset } = useForm<ProfileForm>({
     defaultValues: {
@@ -42,9 +71,9 @@ export default function Profile() {
   });
 
   const profileMutation = useMutation({
-    mutationFn: (data: Partial<ProfileForm>) => updateProfile(user!.id, data),
-    onSuccess: () => {
-      checkAuth();
+    mutationFn: (data: Partial<ProfileForm & { photo_url: string }>) => updateProfile(user!.id, data),
+    onSuccess: (updatedUser) => {
+      setUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsEditing(false);
     },
@@ -53,11 +82,22 @@ export default function Profile() {
 
   const statusMutation = useMutation({
     mutationFn: (status: TripStatus) => updateTripStatus(user!.id, status),
-    onSuccess: () => {
-      checkAuth();
+    onSuccess: (updatedUser) => {
+      setUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImage(file, 256);
+      profileMutation.mutate({ photo_url: dataUrl });
+    } catch {
+      setError('Failed to process image');
+    }
+  };
 
   const onSubmit = (data: ProfileForm) => {
     setError(null);
@@ -97,9 +137,29 @@ export default function Profile() {
         {/* Profile Header */}
         <Card>
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-3xl">
-              {user.display_name.charAt(0).toUpperCase()}
-            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="relative w-20 h-20 rounded-full overflow-hidden group flex-shrink-0"
+            >
+              {user.photo_url ? (
+                <img src={user.photo_url} alt={user.display_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-3xl">
+                  {user.display_name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
             <div>
               <h2 className="text-xl font-bold text-gray-900">{user.display_name}</h2>
               <p className="text-gray-600">@{user.username}</p>

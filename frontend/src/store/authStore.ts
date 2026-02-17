@@ -14,6 +14,7 @@ interface AuthState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  setUser: (user: User) => void;
   clearError: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -96,6 +97,8 @@ export const useAuthStore = create<AuthState>()(
           set({ user: null, isAuthenticated: false, isLoading: false });
         }
       },
+
+      setUser: (user: User) => set({ user }),
 
       clearError: () => set({ error: null }),
     }),

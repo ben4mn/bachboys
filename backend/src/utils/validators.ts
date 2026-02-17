@@ -31,6 +31,7 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   phone: z.string().max(20).optional(),
   venmo_handle: z.string().max(100).optional(),
+  photo_url: z.string().max(500000).optional(),
 });
 
 export const tripStatusSchema = z.object({
