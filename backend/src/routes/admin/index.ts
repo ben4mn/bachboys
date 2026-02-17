@@ -293,6 +293,30 @@ router.delete('/users/:id', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+// PUT /api/admin/users/:id/reset-password - Reset a user's password
+router.put('/users/:id/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+      throw new AppError('Password must be at least 6 characters', 400);
+    }
+
+    const passwordHash = await hashPassword(password);
+    const [user] = await query<User>(
+      `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2 RETURNING id, display_name`,
+      [passwordHash, req.params.id]
+    );
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    res.json({ status: 'ok', message: `Password reset for ${user.display_name}` });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // PUT /api/admin/users/:id/admin - Toggle admin status
 router.put('/users/:id/admin', async (req: Request, res: Response, next: NextFunction) => {
   try {

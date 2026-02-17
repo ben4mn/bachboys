@@ -63,6 +63,11 @@ export class EmailService {
   private async send(to: string, subject: string, html: string): Promise<void> {
     if (!this.transporter) {
       logger.info(`[Email] Would send to ${to}: "${subject}"`);
+      // Log reset URLs so admins can grab them from logs when SMTP is off
+      const urlMatch = html.match(/href="([^"]*reset-password[^"]*)"/);
+      if (urlMatch) {
+        logger.info(`[Email] Reset URL: ${urlMatch[1]}`);
+      }
       return;
     }
 
