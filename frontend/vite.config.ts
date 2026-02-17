@@ -14,10 +14,10 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'BachBoys - Bachelor Party Planner',
+        name: "Nick's Bach Party",
         short_name: 'BachBoys',
         description: 'Bachelor party planning and coordination app',
-        theme_color: '#3b82f6',
+        theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait-primary',

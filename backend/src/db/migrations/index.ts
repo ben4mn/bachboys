@@ -204,6 +204,43 @@ const migrations = [
       GROUP BY e.id, e.title, e.is_mandatory;
     `,
   },
+  // 009: Create guest_list table
+  {
+    name: '009_create_guest_list',
+    up: `
+      CREATE TABLE IF NOT EXISTS guest_list (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        full_name VARCHAR(100) NOT NULL,
+        normalized_name VARCHAR(100) NOT NULL,
+        email VARCHAR(255),
+        is_admin BOOLEAN DEFAULT false,
+        is_groom BOOLEAN DEFAULT false,
+        claimed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+        claimed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_guest_list_normalized_name ON guest_list(normalized_name);
+      CREATE INDEX IF NOT EXISTS idx_guest_list_claimed_by ON guest_list(claimed_by);
+    `,
+  },
+  // 010: Create password_reset_tokens table
+  {
+    name: '010_create_password_reset_tokens',
+    up: `
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_hash ON password_reset_tokens(token_hash);
+      CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id);
+    `,
+  },
 ];
 
 // Track migrations

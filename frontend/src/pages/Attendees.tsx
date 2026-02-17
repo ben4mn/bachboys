@@ -49,7 +49,7 @@ function AttendeeCard({ user }: { user: User }) {
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-gray-900 truncate">{user.display_name}</h3>
             {user.is_admin && (
-              <Shield className="w-4 h-4 text-primary-600" title="Organizer" />
+              <Shield className="w-4 h-4 text-primary-600" />
             )}
           </div>
 

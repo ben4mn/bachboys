@@ -30,3 +30,18 @@ export async function getCurrentUser(): Promise<User> {
   const response = await apiClient.get<{ user: User }>('/auth/me');
   return response.data.user;
 }
+
+export async function verifyGuestName(realName: string): Promise<{ matched: boolean; guest_name?: string }> {
+  const response = await apiClient.post<{ matched: boolean; guest_name?: string }>('/auth/verify-name', { real_name: realName });
+  return response.data;
+}
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const response = await apiClient.post<{ message: string }>('/auth/forgot-password', { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ message: string }> {
+  const response = await apiClient.post<{ message: string }>('/auth/reset-password', { token, password });
+  return response.data;
+}

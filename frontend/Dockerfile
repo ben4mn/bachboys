@@ -1,16 +1,14 @@
-FROM node:20-alpine
-
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Install dependencies first (cached layer)
 COPY package*.json ./
-RUN npm install
-
-# Copy source
+RUN npm ci
 COPY . .
+ARG VITE_API_URL
+ARG VITE_VAPID_PUBLIC_KEY
+RUN npm run build
 
-# Expose Vite dev server port
-EXPOSE 5173
-
-# Default command (overridden in docker-compose for dev)
-CMD ["npm", "run", "dev", "--", "--host"]
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

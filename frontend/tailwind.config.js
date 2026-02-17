@@ -8,21 +8,29 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
+          50: '#eef4ff',
+          100: '#d9e5ff',
+          200: '#bcd0ff',
+          300: '#8eb3ff',
+          400: '#5988ff',
+          500: '#3366ff',
           600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
-        }
+          700: '#1a4fd4',
+          800: '#1a3fac',
+          900: '#1b3788',
+          950: '#142252',
+        },
+        glass: {
+          white: 'rgba(255, 255, 255, 0.72)',
+          border: 'rgba(255, 255, 255, 0.20)',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"SF Pro Display"', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        card: '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        glass: '0 4px 30px rgba(0, 0, 0, 0.05)',
       },
     },
   },

@@ -14,7 +14,7 @@ export function InstallPrompt() {
   // Show iOS-specific instructions
   if (isIOS && !isInstallable) {
     return (
-      <div className="fixed bottom-20 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-40 max-w-lg mx-auto">
+      <div className="fixed bottom-20 left-4 right-4 bg-white/[0.72] backdrop-blur-xl border border-white/20 rounded-2xl shadow-glass p-4 z-40 max-w-lg mx-auto">
         <button
           onClick={() => setDismissed(true)}
           className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600"
@@ -44,7 +44,7 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-40 max-w-lg mx-auto">
+    <div className="fixed bottom-20 left-4 right-4 bg-white/[0.72] backdrop-blur-xl border border-white/20 rounded-2xl shadow-glass p-4 z-40 max-w-lg mx-auto">
       <button
         onClick={() => setDismissed(true)}
         className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600"

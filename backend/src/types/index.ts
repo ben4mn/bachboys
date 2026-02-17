@@ -11,7 +11,7 @@ export interface User {
   is_admin: boolean;
   is_groom: boolean;
   trip_status: TripStatus;
-  push_subscription: PushSubscription | null;
+  push_subscription: Record<string, unknown> | null;
   created_at: Date;
   updated_at: Date;
 }

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Users, Calendar, DollarSign, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Users, Calendar, DollarSign, TrendingUp, CheckCircle } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
 import { getDashboardStats } from '../../api/admin';

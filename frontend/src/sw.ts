@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
@@ -86,7 +86,8 @@ self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
 
-    const options: NotificationOptions = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const options: any = {
       body: data.body || '',
       icon: '/pwa-192x192.png',
       badge: '/pwa-192x192.png',
@@ -191,8 +192,9 @@ self.addEventListener('fetch', (event) => {
   // For navigation requests, try network first, then show offline page
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/') || caches.match('/index.html') || new Response(
+      fetch(event.request).catch(async () => {
+        const cached = await caches.match('/') ?? await caches.match('/index.html');
+        return cached ?? new Response(
           '<!DOCTYPE html><html><head><title>Offline</title></head><body style="font-family:system-ui;text-align:center;padding:50px"><h1>You\'re Offline</h1><p>Please check your connection and try again.</p></body></html>',
           { headers: { 'Content-Type': 'text/html' } }
         );

@@ -61,9 +61,9 @@ function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
             </div>
           )}
 
-          {event.total_cost > 0 && (
+          {Number(event.total_cost) > 0 && (
             <div className="text-sm font-medium text-primary-600">
-              ${event.total_cost.toFixed(0)} total
+              ${Number(event.total_cost).toFixed(0)} total
             </div>
           )}
         </div>

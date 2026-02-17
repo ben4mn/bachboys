@@ -18,7 +18,7 @@ import {
   type CostSplit,
 } from '../../api/admin';
 import { getErrorMessage } from '../../api/client';
-import type { Event, User } from '../../types';
+import type { Event } from '../../types';
 
 interface EventFormData {
   title: string;
@@ -386,7 +386,7 @@ function CostSplitModal({
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>
               <div className="text-sm text-gray-500">Total Event Cost</div>
-              <div className="text-xl font-bold">${event.total_cost.toFixed(2)}</div>
+              <div className="text-xl font-bold">${Number(event.total_cost).toFixed(2)}</div>
             </div>
             <button
               onClick={() => calculateMutation.mutate()}
@@ -435,7 +435,7 @@ function CostSplitModal({
             <span className="font-medium">Total Assigned</span>
             <span
               className={`text-lg font-bold ${
-                Math.abs(totalAssigned - event.total_cost) < 0.01
+                Math.abs(totalAssigned - Number(event.total_cost)) < 0.01
                   ? 'text-green-600'
                   : 'text-orange-600'
               }`}
@@ -547,15 +547,15 @@ export default function AdminEvents() {
                 {event.location && (
                   <p className="text-sm text-gray-500 mt-1">{event.location}</p>
                 )}
-                {event.total_cost > 0 && (
+                {Number(event.total_cost) > 0 && (
                   <p className="text-sm font-medium text-primary-600 mt-2">
-                    ${event.total_cost.toFixed(2)} total ({event.split_type} split)
+                    ${Number(event.total_cost).toFixed(2)} total ({event.split_type} split)
                   </p>
                 )}
               </div>
 
               <div className="flex items-center gap-1">
-                {event.total_cost > 0 && (
+                {Number(event.total_cost) > 0 && (
                   <button
                     onClick={() => setCostSplitEvent(event)}
                     className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"

@@ -5,13 +5,16 @@
 /* Custom base styles */
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: '"SF Pro Display"', 'Inter', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-slate-50 text-gray-900 antialiased;
     min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Prevent pull-to-refresh on mobile */
@@ -23,7 +26,7 @@
 /* Custom component styles */
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
   }
 
   .btn-primary {
@@ -39,11 +42,15 @@
   }
 
   .input {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 outline-none transition-colors;
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 outline-none transition-colors;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-4;
+    @apply bg-white rounded-2xl shadow-card border border-gray-100 p-4;
+  }
+
+  .glass {
+    @apply bg-white/[0.72] backdrop-blur-xl border border-white/20 shadow-glass;
   }
 }
 

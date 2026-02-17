@@ -1,10 +1,24 @@
 import { z } from 'zod';
 
 export const registerSchema = z.object({
+  real_name: z.string().min(1).max(100),
   username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().email(),
   password: z.string().min(6).max(100),
   display_name: z.string().min(1).max(100),
+});
+
+export const verifyNameSchema = z.object({
+  real_name: z.string().min(1).max(100),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(6).max(100),
 });
 
 export const loginSchema = z.object({

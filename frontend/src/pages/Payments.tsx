@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { DollarSign, TrendingUp, TrendingDown, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';

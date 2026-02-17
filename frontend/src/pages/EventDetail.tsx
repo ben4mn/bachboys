@@ -97,11 +97,11 @@ export default function EventDetail() {
               </div>
             )}
 
-            {user_cost > 0 && (
+            {Number(user_cost) > 0 && (
               <div className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-gray-500" />
                 <div>
-                  <div className="font-medium">${user_cost.toFixed(2)}</div>
+                  <div className="font-medium">${Number(user_cost).toFixed(2)}</div>
                   <div className="text-sm text-gray-600">Your share</div>
                 </div>
               </div>

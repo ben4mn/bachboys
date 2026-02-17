@@ -3,8 +3,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
 // Pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Schedule from './pages/Schedule';
 import EventDetail from './pages/EventDetail';
 import Payments from './pages/Payments';
@@ -16,8 +19,6 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/Events';
 import AdminUsers from './pages/admin/Users';
 import AdminPayments from './pages/admin/Payments';
-
-// Admin Pages
 import AdminNotifications from './pages/admin/Notifications';
 
 // Components
@@ -39,7 +40,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -49,7 +50,6 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore();
 
   if (isAuthenticated) {
-    // Redirect admins to admin panel, regular users to schedule
     return <Navigate to={user?.is_admin ? "/admin" : "/schedule"} replace />;
   }
 
@@ -58,7 +58,7 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20">
       {children}
       <BottomNav />
       <InstallPrompt />
@@ -67,19 +67,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { checkAuth, isLoading, _hasHydrated } = useAuthStore();
+  const { checkAuth, isAuthenticated, isLoading, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    // Only check auth after hydration completes
     if (_hasHydrated) {
       checkAuth();
     }
   }, [checkAuth, _hasHydrated]);
 
-  // Show loading while hydrating or checking auth
   if (!_hasHydrated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -89,6 +87,14 @@ export default function App() {
     <>
       <OfflineIndicator />
       <Routes>
+      {/* Landing (unauthenticated home) */}
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? <Navigate to="/schedule" replace /> : <Landing />
+        }
+      />
+
       {/* Auth routes */}
       <Route
         path="/login"
@@ -106,6 +112,8 @@ export default function App() {
           </AuthLayout>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected routes */}
       <Route
@@ -175,9 +183,8 @@ export default function App() {
         <Route path="notifications" element={<AdminNotifications />} />
       </Route>
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/schedule" replace />} />
-      <Route path="*" element={<Navigate to="/schedule" replace />} />
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </>
   );

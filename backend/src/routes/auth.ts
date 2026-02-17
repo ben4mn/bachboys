@@ -1,7 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authService } from '../services/AuthService.js';
 import { authenticate } from '../middleware/auth.js';
-import { validate, registerSchema, loginSchema } from '../utils/validators.js';
+import {
+  validate,
+  registerSchema,
+  loginSchema,
+  verifyNameSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../utils/validators.js';
 import type { PublicUser } from '../types/index.js';
 
 const router = Router();
@@ -33,6 +40,17 @@ function toPublicUser(user: {
   };
 }
 
+// POST /api/auth/verify-name
+router.post('/verify-name', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { real_name } = validate(verifyNameSchema, req.body);
+    const result = await authService.verifyName(real_name);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // POST /api/auth/register
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -60,6 +78,28 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       accessToken,
       refreshToken,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = validate(forgotPasswordSchema, req.body);
+    await authService.forgotPassword(email);
+    res.json({ message: 'If that email is registered, you will receive a reset link.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, password } = validate(resetPasswordSchema, req.body);
+    await authService.resetPassword(token, password);
+    res.json({ message: 'Password reset successfully.' });
   } catch (error) {
     next(error);
   }
