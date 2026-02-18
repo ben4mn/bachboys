@@ -9,6 +9,10 @@ export interface User {
   is_admin: boolean;
   is_groom: boolean;
   trip_status: TripStatus;
+  arrival_flight: string | null;
+  arrival_datetime: string | null;
+  departure_flight: string | null;
+  departure_datetime: string | null;
 }
 
 export type TripStatus = 'invited' | 'confirmed' | 'declined' | 'maybe';
@@ -19,6 +23,7 @@ export interface Event {
   description: string | null;
   location: string | null;
   location_url: string | null;
+  event_url: string | null;
   start_time: string;
   end_time: string | null;
   is_mandatory: boolean;

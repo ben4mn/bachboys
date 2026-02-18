@@ -267,6 +267,21 @@ const migrations = [
       CREATE INDEX IF NOT EXISTS idx_photos_created_at ON photos(created_at DESC);
     `,
   },
+  // 013: Add event_url column to events
+  {
+    name: '013_add_event_url',
+    up: `ALTER TABLE events ADD COLUMN IF NOT EXISTS event_url TEXT;`,
+  },
+  // 014: Add flight info columns to users
+  {
+    name: '014_add_flight_info',
+    up: `
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS arrival_flight VARCHAR(20);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS arrival_datetime TIMESTAMP;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS departure_flight VARCHAR(20);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS departure_datetime TIMESTAMP;
+    `,
+  },
 ];
 
 // Track migrations

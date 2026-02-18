@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Phone, AtSign, Crown, Shield, ChevronDown, UserPlus } from 'lucide-react';
+import { Phone, AtSign, Crown, Shield, ChevronDown, UserPlus, Plane, PlaneLanding, PlaneTakeoff } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -21,6 +22,17 @@ function getTripStatusBadge(status: TripStatus) {
     default:
       return <Badge variant="default">Invited</Badge>;
   }
+}
+
+const AIRLINES: Record<string, string> = {
+  'AA': 'American', 'DL': 'Delta', 'UA': 'United', 'WN': 'Southwest',
+  'B6': 'JetBlue', 'NK': 'Spirit', 'F9': 'Frontier', 'AS': 'Alaska',
+  'G4': 'Allegiant', 'SY': 'Sun Country', 'HA': 'Hawaiian',
+};
+
+function getAirline(flight: string): string {
+  const code = flight.replace(/[0-9]/g, '').toUpperCase();
+  return AIRLINES[code] || code;
 }
 
 function saveAsContact(user: User) {
@@ -101,7 +113,8 @@ function AttendeeCard({
     }
   }, [user.bio]);
 
-  const expandable = !!user.bio && isClamped;
+  const hasFlights = !!(user.arrival_flight || user.departure_flight);
+  const expandable = (!!user.bio && isClamped) || hasFlights;
 
   return (
     <Card onClick={expandable ? onToggle : undefined}>
@@ -133,6 +146,9 @@ function AttendeeCard({
             {user.is_admin && (
               <Shield className="w-4 h-4 text-primary-600" />
             )}
+            {hasFlights && !isExpanded && (
+              <Plane className="w-4 h-4 text-primary-600" />
+            )}
             {expandable && (
               <motion.div
                 animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -155,6 +171,36 @@ function AttendeeCard({
             >
               <LinkedText text={user.bio} />
             </p>
+          )}
+
+          {/* Flight Info */}
+          {hasFlights && isExpanded && (
+            <div className="mt-3 pt-3 border-t dark:border-gray-700 space-y-2">
+              {user.arrival_flight && (
+                <div className="flex items-center gap-2 text-sm">
+                  <PlaneLanding className="w-4 h-4 text-primary-600 flex-shrink-0" />
+                  <span className="font-medium dark:text-white">{user.arrival_flight}</span>
+                  <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.arrival_flight)}</span>
+                  {user.arrival_datetime && (
+                    <span className="text-gray-600 dark:text-gray-400 ml-auto text-xs whitespace-nowrap">
+                      {format(parseISO(user.arrival_datetime), 'EEE, MMM d @ h:mm a')}
+                    </span>
+                  )}
+                </div>
+              )}
+              {user.departure_flight && (
+                <div className="flex items-center gap-2 text-sm">
+                  <PlaneTakeoff className="w-4 h-4 text-primary-600 flex-shrink-0" />
+                  <span className="font-medium dark:text-white">{user.departure_flight}</span>
+                  <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.departure_flight)}</span>
+                  {user.departure_datetime && (
+                    <span className="text-gray-600 dark:text-gray-400 ml-auto text-xs whitespace-nowrap">
+                      {format(parseISO(user.departure_datetime), 'EEE, MMM d @ h:mm a')}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Contact Info */}

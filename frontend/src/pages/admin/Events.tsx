@@ -25,6 +25,7 @@ interface EventFormData {
   description: string;
   location: string;
   location_url: string;
+  event_url: string;
   start_date: string;
   start_time: string;
   end_date: string;
@@ -55,6 +56,7 @@ function EventForm({
         description: event.description || '',
         location: event.location || '',
         location_url: event.location_url || '',
+        event_url: event.event_url || '',
         start_date: format(parseISO(event.start_time), 'yyyy-MM-dd'),
         start_time: format(parseISO(event.start_time), 'HH:mm'),
         end_date: event.end_time ? format(parseISO(event.end_time), 'yyyy-MM-dd') : '',
@@ -71,6 +73,7 @@ function EventForm({
         description: '',
         location: '',
         location_url: '',
+        event_url: '',
         start_date: '',
         start_time: '',
         end_date: '',
@@ -83,9 +86,11 @@ function EventForm({
         notes: '',
       };
 
-  const { register, handleSubmit, formState: { errors } } = useForm<EventFormData>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<EventFormData>({
     defaultValues,
   });
+
+  const splitType = watch('split_type');
 
   const mutation = useMutation({
     mutationFn: async (data: EventFormData) => {
@@ -94,6 +99,7 @@ function EventForm({
         description: data.description || undefined,
         location: data.location || undefined,
         location_url: data.location_url || undefined,
+        event_url: data.event_url || undefined,
         start_time: new Date(`${data.start_date}T${data.start_time}`).toISOString(),
         end_time: data.end_date && data.end_time
           ? new Date(`${data.end_date}T${data.end_time}`).toISOString()
@@ -125,25 +131,25 @@ function EventForm({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold dark:text-white">
             {event ? 'Edit Event' : 'Create Event'}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Title *
             </label>
             <input
@@ -157,7 +163,7 @@ function EventForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
             <textarea
@@ -170,7 +176,7 @@ function EventForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Start Date *
               </label>
               <input
@@ -180,7 +186,7 @@ function EventForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Start Time *
               </label>
               <input
@@ -193,13 +199,13 @@ function EventForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 End Date
               </label>
               <input {...register('end_date')} type="date" className="input" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 End Time
               </label>
               <input {...register('end_time')} type="time" className="input" />
@@ -207,7 +213,7 @@ function EventForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Location
             </label>
             <input
@@ -218,7 +224,7 @@ function EventForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Location URL (Google Maps)
             </label>
             <input
@@ -229,10 +235,22 @@ function EventForm({
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Event Link (Venue / Tickets)
+            </label>
+            <input
+              {...register('event_url')}
+              type="url"
+              className="input"
+              placeholder="https://venue-or-tickets.com/..."
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Total Cost ($)
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {splitType === 'fixed' ? 'Cost Per Person ($)' : splitType === 'custom' ? 'Total Cost ($)' : 'Total Group Cost ($)'}
               </label>
               <input
                 {...register('total_cost', { valueAsNumber: true })}
@@ -244,13 +262,13 @@ function EventForm({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Cost Split Type
               </label>
               <select {...register('split_type')} className="input">
-                <option value="even">Even Split</option>
+                <option value="even">Group Total (split evenly)</option>
+                <option value="fixed">Per Person (fixed rate)</option>
                 <option value="custom">Custom Amounts</option>
-                <option value="fixed">Fixed Per Person</option>
               </select>
             </div>
           </div>
@@ -262,13 +280,13 @@ function EventForm({
               id="exclude_groom"
               className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
-            <label htmlFor="exclude_groom" className="text-sm font-medium text-gray-700">
+            <label htmlFor="exclude_groom" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Exclude groom from cost (split among other guests)
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Category
             </label>
             <select {...register('category')} className="input">
@@ -283,7 +301,7 @@ function EventForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Notes
             </label>
             <textarea
@@ -301,7 +319,7 @@ function EventForm({
               id="is_mandatory"
               className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
-            <label htmlFor="is_mandatory" className="text-sm font-medium text-gray-700">
+            <label htmlFor="is_mandatory" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Mandatory event (everyone must attend)
             </label>
           </div>
@@ -381,27 +399,27 @@ function CostSplitModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <div>
-            <h2 className="text-lg font-semibold">Set Cost Split</h2>
-            <p className="text-sm text-gray-500">{event.title}</p>
+            <h2 className="text-lg font-semibold dark:text-white">Set Cost Split</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{event.title}</p>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div>
-              <div className="text-sm text-gray-500">Total Event Cost</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{event.split_type === 'fixed' ? 'Per Person Rate' : 'Total Event Cost'}</div>
               <div className="text-xl font-bold">${Number(event.total_cost).toFixed(2)}</div>
             </div>
             <button
@@ -418,7 +436,7 @@ function CostSplitModal({
             {confirmedUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-medium text-sm">
@@ -432,14 +450,14 @@ function CostSplitModal({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-gray-500">$</span>
+                  <span className="text-gray-500 dark:text-gray-400">$</span>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={costs[user.id] || ''}
                     onChange={(e) => handleCostChange(user.id, e.target.value)}
-                    className="w-24 px-2 py-1 border rounded text-right"
+                    className="w-24 px-2 py-1 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-right"
                     placeholder="0.00"
                   />
                 </div>
@@ -447,7 +465,7 @@ function CostSplitModal({
             ))}
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <span className="font-medium">Total Assigned</span>
             <span
               className={`text-lg font-bold ${
@@ -516,8 +534,8 @@ export default function AdminEvents() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Events</h1>
-          <p className="text-gray-600">Manage the party schedule</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Events</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage the party schedule</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
@@ -536,8 +554,8 @@ export default function AdminEvents() {
 
       {events && events.length === 0 && (
         <Card className="text-center py-12">
-          <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">No events yet</p>
+          <Calendar className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">No events yet</p>
           <button
             onClick={() => setShowForm(true)}
             className="mt-4 text-primary-600 font-medium"
@@ -553,19 +571,23 @@ export default function AdminEvents() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900">{event.title}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{event.title}</h3>
                   {event.is_mandatory && <Badge variant="error">Required</Badge>}
                   {event.category && <Badge>{event.category}</Badge>}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {format(parseISO(event.start_time), 'EEE, MMM d @ h:mm a')}
                 </p>
                 {event.location && (
-                  <p className="text-sm text-gray-500 mt-1">{event.location}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.location}</p>
                 )}
                 {Number(event.total_cost) > 0 && (
                   <p className="text-sm font-medium text-primary-600 mt-2">
-                    ${Number(event.total_cost).toFixed(2)} total ({event.split_type} split{event.exclude_groom ? ', groom excluded' : ''})
+                    {event.split_type === 'fixed'
+                      ? `$${Number(event.total_cost).toFixed(0)}/person${event.exclude_groom ? ' (groom excluded)' : ''}`
+                      : event.split_type === 'custom'
+                      ? `$${Number(event.total_cost).toFixed(2)} total (custom split)`
+                      : `$${Number(event.total_cost).toLocaleString()} total (split evenly${event.exclude_groom ? ', groom excluded' : ''})`}
                   </p>
                 )}
               </div>
@@ -574,7 +596,7 @@ export default function AdminEvents() {
                 {Number(event.total_cost) > 0 && (
                   <button
                     onClick={() => setCostSplitEvent(event)}
-                    className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                     title="Set cost split"
                   >
                     <DollarSign className="w-4 h-4" />
@@ -582,7 +604,7 @@ export default function AdminEvents() {
                 )}
                 <button
                   onClick={() => handleEdit(event)}
-                  className="p-2 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   title="Edit"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -590,7 +612,7 @@ export default function AdminEvents() {
                 <button
                   onClick={() => handleDelete(event)}
                   disabled={deleteMutation.isPending}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded"
+                  className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -74,15 +74,16 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
     const data = validate(eventSchema, req.body);
 
     const [event] = await query<Event>(
-      `INSERT INTO events (title, description, location, location_url, start_time, end_time,
+      `INSERT INTO events (title, description, location, location_url, event_url, start_time, end_time,
                            is_mandatory, total_cost, split_type, exclude_groom, category, image_url, notes, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
        RETURNING *`,
       [
         data.title,
         data.description || null,
         data.location || null,
         data.location_url || null,
+        data.event_url || null,
         data.start_time,
         data.end_time || null,
         data.is_mandatory,
@@ -96,8 +97,8 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
       ]
     );
 
-    // Auto-calculate costs for even-split events
-    if (event.split_type === 'even' && Number(event.total_cost) > 0) {
+    // Auto-calculate costs for even/fixed-split events
+    if (event.split_type !== 'custom' && Number(event.total_cost) > 0) {
       recalculateEventCosts(event.id).catch(() => {});
     }
 
@@ -114,16 +115,17 @@ router.put('/events/:id', async (req: Request, res: Response, next: NextFunction
 
     const [event] = await query<Event>(
       `UPDATE events SET
-         title = $1, description = $2, location = $3, location_url = $4,
-         start_time = $5, end_time = $6, is_mandatory = $7, total_cost = $8,
-         split_type = $9, exclude_groom = $10, category = $11, image_url = $12, notes = $13, updated_at = NOW()
-       WHERE id = $14
+         title = $1, description = $2, location = $3, location_url = $4, event_url = $5,
+         start_time = $6, end_time = $7, is_mandatory = $8, total_cost = $9,
+         split_type = $10, exclude_groom = $11, category = $12, image_url = $13, notes = $14, updated_at = NOW()
+       WHERE id = $15
        RETURNING *`,
       [
         data.title,
         data.description || null,
         data.location || null,
         data.location_url || null,
+        data.event_url || null,
         data.start_time,
         data.end_time || null,
         data.is_mandatory,
@@ -142,7 +144,7 @@ router.put('/events/:id', async (req: Request, res: Response, next: NextFunction
     }
 
     // Auto-recalculate costs if event cost or split changed
-    if (event.split_type === 'even' && Number(event.total_cost) > 0) {
+    if (event.split_type !== 'custom' && Number(event.total_cost) > 0) {
       recalculateEventCosts(event.id).catch(() => {});
     }
 
@@ -210,27 +212,42 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
       throw new AppError('Event not found', 404);
     }
 
-    // Get confirmed attendees, conditionally excluding the groom
-    const attendees = event.exclude_groom
+    // Get paying attendees (exclude groom if needed)
+    const payingAttendees = event.exclude_groom
       ? await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed' AND is_groom = false`)
       : await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
 
-    if (attendees.length === 0) {
+    if (payingAttendees.length === 0) {
       throw new AppError('No confirmed attendees to split costs', 400);
     }
 
-    const perPersonCost = Number(event.total_cost) / attendees.length;
+    const totalCost = Number(event.total_cost);
+    let perPersonCost: number;
+    let note: string;
+
+    if (event.split_type === 'fixed') {
+      // totalCost is the per-person rate
+      if (event.exclude_groom) {
+        const allAttendees = await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
+        perPersonCost = (totalCost * allAttendees.length) / payingAttendees.length;
+        note = `$${totalCost.toFixed(0)}/person (covers groom)`;
+      } else {
+        perPersonCost = totalCost;
+        note = `$${totalCost.toFixed(0)}/person`;
+      }
+    } else {
+      // even split
+      perPersonCost = totalCost / payingAttendees.length;
+      note = event.exclude_groom
+        ? `$${totalCost.toFixed(0)} ÷ ${payingAttendees.length} guests (covers groom)`
+        : `Even split`;
+    }
 
     // Delete existing costs
     await query(`DELETE FROM event_costs WHERE event_id = $1`, [req.params.id]);
 
-    // Build descriptive note
-    const note = event.exclude_groom
-      ? `$${Number(event.total_cost).toFixed(0)} ÷ ${attendees.length} guests (covers groom)`
-      : `Even split`;
-
     // Insert costs for paying attendees
-    for (const attendee of attendees) {
+    for (const attendee of payingAttendees) {
       await query(
         `INSERT INTO event_costs (event_id, user_id, amount, notes)
          VALUES ($1, $2, $3, $4)`,

@@ -25,6 +25,10 @@ function toPublicUser(user: {
   is_admin: boolean;
   is_groom: boolean;
   trip_status: string;
+  arrival_flight?: string | null;
+  arrival_datetime?: Date | null;
+  departure_flight?: string | null;
+  departure_datetime?: Date | null;
 }): PublicUser {
   return {
     id: user.id,
@@ -37,6 +41,10 @@ function toPublicUser(user: {
     is_admin: user.is_admin,
     is_groom: user.is_groom,
     trip_status: user.trip_status as PublicUser['trip_status'],
+    arrival_flight: user.arrival_flight ?? null,
+    arrival_datetime: user.arrival_datetime ?? null,
+    departure_flight: user.departure_flight ?? null,
+    departure_datetime: user.departure_datetime ?? null,
   };
 }
 

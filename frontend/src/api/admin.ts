@@ -19,6 +19,7 @@ export interface EventInput {
   description?: string;
   location?: string;
   location_url?: string;
+  event_url?: string;
   start_time: string;
   end_time?: string;
   is_mandatory: boolean;

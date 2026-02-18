@@ -32,6 +32,10 @@ export const updateProfileSchema = z.object({
   phone: z.string().max(20).optional(),
   venmo_handle: z.string().max(100).optional(),
   photo_url: z.string().max(500000).optional(),
+  arrival_flight: z.string().max(20).optional().nullable(),
+  arrival_datetime: z.string().optional().nullable(),
+  departure_flight: z.string().max(20).optional().nullable(),
+  departure_datetime: z.string().optional().nullable(),
 });
 
 export const tripStatusSchema = z.object({
@@ -43,6 +47,7 @@ export const eventSchema = z.object({
   description: z.string().optional(),
   location: z.string().optional(),
   location_url: z.string().url().optional(),
+  event_url: z.string().url().optional(),
   start_time: z.string().datetime(),
   end_time: z.string().datetime().optional(),
   is_mandatory: z.boolean().default(false),

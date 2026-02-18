@@ -100,6 +100,20 @@ export default function EventDetail() {
               </div>
             )}
 
+            {event.event_url && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <a
+                  href={event.event_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 font-medium flex items-center gap-1"
+                >
+                  Event Details <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+
             {Number(event.total_cost) > 0 && (
               <div className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -118,7 +132,11 @@ export default function EventDetail() {
                     </>
                   ) : (
                     <>
-                      <div className="font-medium dark:text-white">${Number(event.total_cost).toFixed(0)} total</div>
+                      <div className="font-medium dark:text-white">
+                        {event.split_type === 'fixed'
+                          ? `$${Number(event.total_cost).toFixed(0)}/person`
+                          : `$${Number(event.total_cost).toFixed(0)} total`}
+                      </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">Cost split pending</div>
                     </>
                   )}

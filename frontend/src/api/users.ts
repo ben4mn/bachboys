@@ -17,7 +17,7 @@ export async function getUser(id: string): Promise<User> {
 
 export async function updateProfile(
   id: string,
-  data: Partial<Pick<User, 'display_name' | 'bio' | 'phone' | 'venmo_handle' | 'photo_url'>>
+  data: Partial<Pick<User, 'display_name' | 'bio' | 'phone' | 'venmo_handle' | 'photo_url' | 'arrival_flight' | 'arrival_datetime' | 'departure_flight' | 'departure_datetime'>>
 ): Promise<User> {
   const response = await apiClient.put<{ user: User }>(`/users/${id}`, data);
   return response.data.user;

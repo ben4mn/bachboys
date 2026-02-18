@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { LogOut, Check, Edit2, Settings, Camera, Sun, Moon, Monitor } from 'lucide-react';
+import { LogOut, Check, Edit2, Settings, Camera, Sun, Moon, Monitor, Plane } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
@@ -60,6 +60,170 @@ const themeOptions = [
   { value: 'dark' as const, label: 'Dark', icon: Moon },
   { value: 'system' as const, label: 'System', icon: Monitor },
 ];
+
+function TravelDetails() {
+  const { user, setUser } = useAuthStore();
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [arrivalFlight, setArrivalFlight] = useState(user?.arrival_flight || '');
+  const [arrivalDatetime, setArrivalDatetime] = useState(
+    user?.arrival_datetime ? user.arrival_datetime.slice(0, 16) : ''
+  );
+  const [departureFlight, setDepartureFlight] = useState(user?.departure_flight || '');
+  const [departureDatetime, setDepartureDatetime] = useState(
+    user?.departure_datetime ? user.departure_datetime.slice(0, 16) : ''
+  );
+
+  const mutation = useMutation({
+    mutationFn: (data: Record<string, string | null>) => updateProfile(user!.id, data),
+    onSuccess: (updatedUser) => {
+      setUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsEditing(false);
+    },
+  });
+
+  const handleSave = () => {
+    mutation.mutate({
+      arrival_flight: arrivalFlight || null,
+      arrival_datetime: arrivalDatetime ? new Date(arrivalDatetime).toISOString() : null,
+      departure_flight: departureFlight || null,
+      departure_datetime: departureDatetime ? new Date(departureDatetime).toISOString() : null,
+    });
+  };
+
+  const handleCancel = () => {
+    setArrivalFlight(user?.arrival_flight || '');
+    setArrivalDatetime(user?.arrival_datetime ? user.arrival_datetime.slice(0, 16) : '');
+    setDepartureFlight(user?.departure_flight || '');
+    setDepartureDatetime(user?.departure_datetime ? user.departure_datetime.slice(0, 16) : '');
+    setIsEditing(false);
+  };
+
+  const hasFlightInfo = !!(user?.arrival_flight || user?.departure_flight);
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Plane className="w-5 h-5 text-primary-600" />
+          <h3 className="font-semibold text-gray-900 dark:text-white">Travel Details</h3>
+        </div>
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-1 text-primary-600 text-sm font-medium"
+          >
+            <Edit2 className="w-4 h-4" />
+            Edit
+          </button>
+        )}
+      </div>
+
+      {isEditing ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Arrival Flight
+              </label>
+              <input
+                type="text"
+                value={arrivalFlight}
+                onChange={(e) => setArrivalFlight(e.target.value)}
+                className="input"
+                placeholder="e.g., DL1234"
+                maxLength={20}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Arrival Date/Time
+              </label>
+              <input
+                type="datetime-local"
+                value={arrivalDatetime}
+                onChange={(e) => setArrivalDatetime(e.target.value)}
+                className="input"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Departure Flight
+              </label>
+              <input
+                type="text"
+                value={departureFlight}
+                onChange={(e) => setDepartureFlight(e.target.value)}
+                className="input"
+                placeholder="e.g., WN5678"
+                maxLength={20}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Departure Date/Time
+              </label>
+              <input
+                type="datetime-local"
+                value={departureDatetime}
+                onChange={(e) => setDepartureDatetime(e.target.value)}
+                className="input"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={mutation.isPending}
+              className="btn-primary flex-1"
+            >
+              {mutation.isPending ? <LoadingSpinner size="sm" /> : 'Save'}
+            </button>
+            <button onClick={handleCancel} className="btn-secondary flex-1">
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : hasFlightInfo ? (
+        <div className="space-y-2 text-sm">
+          {user?.arrival_flight && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 dark:text-gray-400">Arriving</span>
+              <span className="font-medium dark:text-white">{user.arrival_flight}</span>
+            </div>
+          )}
+          {user?.arrival_datetime && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 text-xs">
+                {new Date(user.arrival_datetime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+              </span>
+            </div>
+          )}
+          {user?.departure_flight && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 dark:text-gray-400">Departing</span>
+              <span className="font-medium dark:text-white">{user.departure_flight}</span>
+            </div>
+          )}
+          {user?.departure_datetime && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 text-xs">
+                {new Date(user.departure_datetime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+              </span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500 dark:text-gray-400">No flight info added yet</p>
+      )}
+    </Card>
+  );
+}
 
 export default function Profile() {
   const { user, logout, setUser } = useAuthStore();
@@ -220,6 +384,9 @@ export default function Profile() {
 
         {/* Notifications */}
         <NotificationSettings />
+
+        {/* Travel Details */}
+        <TravelDetails />
 
         {/* Trip Status */}
         <Card>

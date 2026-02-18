@@ -20,6 +20,10 @@ function toPublicUser(user: User): PublicUser {
     is_admin: user.is_admin,
     is_groom: user.is_groom,
     trip_status: user.trip_status,
+    arrival_flight: user.arrival_flight,
+    arrival_datetime: user.arrival_datetime,
+    departure_flight: user.departure_flight,
+    departure_datetime: user.departure_datetime,
   };
 }
 
@@ -28,7 +32,8 @@ router.get('/', authenticate, async (_req: Request, res: Response, next: NextFun
   try {
     const users = await query<User>(
       `SELECT id, username, display_name, bio, photo_url, phone, venmo_handle,
-              is_admin, is_groom, trip_status, created_at
+              is_admin, is_groom, trip_status, arrival_flight, arrival_datetime,
+              departure_flight, departure_datetime, created_at
        FROM users
        ORDER BY display_name`
     );
@@ -44,7 +49,8 @@ router.get('/:id', authenticate, async (req: Request, res: Response, next: NextF
   try {
     const user = await queryOne<User>(
       `SELECT id, username, display_name, bio, photo_url, phone, venmo_handle,
-              is_admin, is_groom, trip_status, created_at
+              is_admin, is_groom, trip_status, arrival_flight, arrival_datetime,
+              departure_flight, departure_datetime, created_at
        FROM users WHERE id = $1`,
       [req.params.id]
     );
@@ -92,6 +98,22 @@ router.put('/:id', authenticate, async (req: Request, res: Response, next: NextF
     if (data.photo_url !== undefined) {
       updates.push(`photo_url = $${paramIndex++}`);
       values.push(data.photo_url);
+    }
+    if (data.arrival_flight !== undefined) {
+      updates.push(`arrival_flight = $${paramIndex++}`);
+      values.push(data.arrival_flight);
+    }
+    if (data.arrival_datetime !== undefined) {
+      updates.push(`arrival_datetime = $${paramIndex++}`);
+      values.push(data.arrival_datetime);
+    }
+    if (data.departure_flight !== undefined) {
+      updates.push(`departure_flight = $${paramIndex++}`);
+      values.push(data.departure_flight);
+    }
+    if (data.departure_datetime !== undefined) {
+      updates.push(`departure_datetime = $${paramIndex++}`);
+      values.push(data.departure_datetime);
     }
 
     if (updates.length === 0) {

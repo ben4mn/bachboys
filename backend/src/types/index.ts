@@ -12,6 +12,10 @@ export interface User {
   is_groom: boolean;
   trip_status: TripStatus;
   push_subscription: Record<string, unknown> | null;
+  arrival_flight: string | null;
+  arrival_datetime: Date | null;
+  departure_flight: string | null;
+  departure_datetime: Date | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -24,6 +28,7 @@ export interface Event {
   description: string | null;
   location: string | null;
   location_url: string | null;
+  event_url: string | null;
   start_time: Date;
   end_time: Date | null;
   is_mandatory: boolean;
@@ -111,6 +116,10 @@ export interface PublicUser {
   is_admin: boolean;
   is_groom: boolean;
   trip_status: TripStatus;
+  arrival_flight: string | null;
+  arrival_datetime: Date | null;
+  departure_flight: string | null;
+  departure_datetime: Date | null;
 }
 
 export interface JwtPayload {
