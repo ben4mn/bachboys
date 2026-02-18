@@ -22,48 +22,60 @@ function Lightbox({
   isDeleting: boolean;
 }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
+    <div className="fixed inset-0 z-[100] bg-black flex flex-col" onClick={onClose}>
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top,0px)] h-14 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           {photo.photo_url ? (
-            <img src={photo.photo_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+            <img src={photo.photo_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium text-sm">
+            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium text-sm shrink-0">
               {photo.display_name.charAt(0).toUpperCase()}
             </div>
           )}
-          <div>
-            <div className="text-white font-medium text-sm">{photo.display_name}</div>
-            <div className="text-gray-400 text-xs">{format(parseISO(photo.created_at), 'MMM d, yyyy · h:mm a')}</div>
+          <div className="min-w-0">
+            <div className="text-white font-medium text-sm truncate">{photo.display_name}</div>
+            <div className="text-gray-400 text-xs">
+              {(() => {
+                try { return format(parseISO(photo.created_at), 'MMM d, yyyy · h:mm a'); }
+                catch { return ''; }
+              })()}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           {canDelete && (
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               disabled={isDeleting}
-              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+              className="p-2.5 text-gray-400 hover:text-red-400 active:text-red-500 transition-colors"
             >
               {isDeleting ? <LoadingSpinner size="sm" /> : <Trash2 className="w-5 h-5" />}
             </button>
           )}
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors">
+          <button
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="p-2.5 text-gray-400 hover:text-white active:text-white transition-colors"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+      {/* Image */}
+      <div className="flex-1 flex items-center justify-center p-4 min-h-0" onClick={(e) => e.stopPropagation()}>
         <img
           src={photo.file_path}
           alt={photo.caption || ''}
           className="max-w-full max-h-full object-contain"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
       </div>
 
+      {/* Caption */}
       {photo.caption && (
-        <div className="p-4 text-center">
-          <p className="text-white text-sm">{photo.caption}</p>
+        <div className="px-4 pb-[env(safe-area-inset-bottom,16px)] text-center shrink-0">
+          <p className="text-white/90 text-sm">{photo.caption}</p>
         </div>
       )}
     </div>
@@ -94,61 +106,69 @@ function UploadModal({ onClose, onUpload, isUploading }: {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end justify-center" onClick={onClose}>
       <div
-        className="bg-white dark:bg-gray-800 w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl p-6 space-y-4"
+        className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-t-2xl shadow-2xl pb-[env(safe-area-inset-bottom,16px)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upload Photo</h2>
-          <button onClick={onClose} className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <X className="w-5 h-5" />
-          </button>
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
         </div>
 
-        {preview ? (
-          <div className="relative">
-            <img src={preview} alt="Preview" className="w-full max-h-64 object-contain rounded-lg bg-gray-100 dark:bg-gray-700" />
-            <button
-              onClick={() => { setSelectedFile(null); setPreview(null); }}
-              className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white"
-            >
-              <X className="w-4 h-4" />
+        <div className="px-5 pb-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upload Photo</h2>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full">
+              <X className="w-5 h-5" />
             </button>
           </div>
-        ) : (
+
+          {preview ? (
+            <div className="relative">
+              <img src={preview} alt="Preview" className="w-full max-h-56 object-contain rounded-xl bg-gray-100 dark:bg-gray-700" />
+              <button
+                onClick={() => { setSelectedFile(null); setPreview(null); }}
+                className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-black/70"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-primary-500 active:border-primary-600 transition-colors"
+            >
+              <Camera className="w-8 h-8 mb-2" />
+              <span className="text-sm font-medium">Tap to select photo</span>
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          <input
+            type="text"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Add a caption (optional)"
+            className="input"
+          />
+
           <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full h-40 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-primary-500 transition-colors"
+            onClick={handleSubmit}
+            disabled={!selectedFile || isUploading}
+            className="btn-primary w-full h-12 text-base font-semibold"
           >
-            <Camera className="w-8 h-8 mb-2" />
-            <span className="text-sm font-medium">Tap to select photo</span>
+            {isUploading ? <LoadingSpinner size="sm" /> : 'Upload'}
           </button>
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-
-        <input
-          type="text"
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          placeholder="Add a caption (optional)"
-          className="input"
-        />
-
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedFile || isUploading}
-          className="btn-primary w-full h-12"
-        >
-          {isUploading ? <LoadingSpinner size="sm" /> : 'Upload'}
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -164,6 +184,7 @@ export default function Gallery() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['gallery', page],
     queryFn: () => getGalleryPhotos(page),
+    retry: 1,
   });
 
   const uploadMutation = useMutation({
@@ -220,7 +241,7 @@ export default function Gallery() {
           </div>
         )}
 
-        {!isLoading && photos.length === 0 && (
+        {!isLoading && !error && photos.length === 0 && (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
             <p>No photos yet</p>
@@ -246,8 +267,13 @@ export default function Gallery() {
                   <img
                     src={photo.thumb_path}
                     alt={photo.caption || ''}
-                    className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                    className="w-full h-full object-cover hover:opacity-90 transition-opacity bg-gray-200 dark:bg-gray-700"
                     loading="lazy"
+                    onError={(e) => {
+                      const el = e.target as HTMLImageElement;
+                      el.style.display = 'none';
+                      el.parentElement!.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                    }}
                   />
                 </button>
               ))}

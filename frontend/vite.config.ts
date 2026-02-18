@@ -63,6 +63,10 @@ export default defineConfig({
       '/api': {
         target: 'http://bachboys-backend:3031',
         changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://bachboys-backend:3031',
+        changeOrigin: true,
       }
     }
   }
