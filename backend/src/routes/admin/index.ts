@@ -5,6 +5,7 @@ import { validate, eventSchema, costSplitSchema } from '../../utils/validators.j
 import { hashPassword } from '../../utils/crypto.js';
 import { AppError } from '../../middleware/errorHandler.js';
 import { pushService } from '../../services/PushService.js';
+import { recalculateEventCosts } from '../../utils/recalculateCosts.js';
 import type { Event, User, Payment, EventCost, UserBalance } from '../../types/index.js';
 
 const router = Router();
@@ -95,6 +96,11 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
       ]
     );
 
+    // Auto-calculate costs for even-split events
+    if (event.split_type === 'even' && Number(event.total_cost) > 0) {
+      recalculateEventCosts(event.id).catch(() => {});
+    }
+
     res.status(201).json({ event });
   } catch (error) {
     next(error);
@@ -133,6 +139,11 @@ router.put('/events/:id', async (req: Request, res: Response, next: NextFunction
 
     if (!event) {
       throw new AppError('Event not found', 404);
+    }
+
+    // Auto-recalculate costs if event cost or split changed
+    if (event.split_type === 'even' && Number(event.total_cost) > 0) {
+      recalculateEventCosts(event.id).catch(() => {});
     }
 
     res.json({ event });

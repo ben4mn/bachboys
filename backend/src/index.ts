@@ -9,6 +9,8 @@ import { logger } from './utils/logger.js';
 import { testConnection } from './db/pool.js';
 import { runMigrations } from './db/migrations/index.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { recalculateEventCosts } from './utils/recalculateCosts.js';
+import { query } from './db/pool.js';
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
@@ -95,6 +97,18 @@ async function start() {
 
     // Run migrations
     await runMigrations();
+
+    // Recalculate all even-split event costs on startup
+    // Ensures costs are in sync after deploys or manual DB changes
+    const evenEvents = await query<{ id: string }>(
+      `SELECT id FROM events WHERE split_type = 'even' AND total_cost > 0`
+    );
+    for (const event of evenEvents) {
+      await recalculateEventCosts(event.id);
+    }
+    if (evenEvents.length > 0) {
+      logger.info(`Recalculated costs for ${evenEvents.length} even-split events on startup`);
+    }
 
     app.listen(config.port, () => {
       logger.info(`Server running on port ${config.port} in ${config.env} mode`);

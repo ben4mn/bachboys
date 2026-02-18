@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import { query, queryOne } from '../db/pool.js';
 import { validate, rsvpSchema } from '../utils/validators.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { recalculateEventCosts } from '../utils/recalculateCosts.js';
 import type { Event, Rsvp, EventCost, User } from '../types/index.js';
 
 const router = Router();
@@ -145,6 +146,9 @@ router.put('/:eventId/rsvp', authenticate, async (req: Request, res: Response, n
        RETURNING *`,
       [req.user!.userId, req.params.eventId, status]
     );
+
+    // Recalculate costs for this event with updated attendance
+    recalculateEventCosts(req.params.eventId).catch(() => {});
 
     res.json({ rsvp });
   } catch (error) {

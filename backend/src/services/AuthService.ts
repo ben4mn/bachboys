@@ -5,6 +5,8 @@ import { query, queryOne } from '../db/pool.js';
 import { hashPassword, verifyPassword, hashToken, generateSecureToken } from '../utils/crypto.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { emailService } from './EmailService.js';
+import { recalculateAllMandatoryCosts } from '../utils/recalculateCosts.js';
+import { logger } from '../utils/logger.js';
 import type { User, JwtPayload, RefreshToken } from '../types/index.js';
 
 interface GuestListEntry {
@@ -63,6 +65,11 @@ export class AuthService {
 
     // Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    // Recalculate mandatory event costs to include new user
+    recalculateAllMandatoryCosts().catch((err) =>
+      logger.error('Failed to recalculate costs after registration:', err)
+    );
 
     // Send welcome email (non-blocking)
     if (data.email) {

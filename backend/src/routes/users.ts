@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import { query, queryOne } from '../db/pool.js';
 import { validate, updateProfileSchema, tripStatusSchema } from '../utils/validators.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { recalculateAllMandatoryCosts } from '../utils/recalculateCosts.js';
 import type { User, PublicUser } from '../types/index.js';
 
 const router = Router();
@@ -129,6 +130,9 @@ router.put('/:id/trip-status', authenticate, async (req: Request, res: Response,
     if (!user) {
       throw new AppError('User not found', 404);
     }
+
+    // Recalculate mandatory event costs when someone confirms/declines trip
+    recalculateAllMandatoryCosts().catch(() => {});
 
     res.json({ user: toPublicUser(user) });
   } catch (error) {
