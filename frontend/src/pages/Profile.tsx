@@ -143,7 +143,7 @@ function TravelDetails() {
               type="datetime-local"
               value={arrivalDatetime}
               onChange={(e) => setArrivalDatetime(e.target.value)}
-              className="input w-full"
+              className="input w-full min-w-0 max-w-full"
             />
           </div>
           <div>
@@ -167,7 +167,7 @@ function TravelDetails() {
               type="datetime-local"
               value={departureDatetime}
               onChange={(e) => setDepartureDatetime(e.target.value)}
-              className="input w-full"
+              className="input w-full min-w-0 max-w-full"
             />
           </div>
           <div className="flex gap-2">
