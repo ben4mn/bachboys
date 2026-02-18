@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Phone, AtSign, Crown, Shield, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
@@ -32,8 +32,20 @@ function AttendeeCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const bioRef = useRef<HTMLParagraphElement>(null);
+  const [isClamped, setIsClamped] = useState(false);
+
+  useEffect(() => {
+    const el = bioRef.current;
+    if (el) {
+      setIsClamped(el.scrollHeight > el.clientHeight);
+    }
+  }, [user.bio]);
+
+  const expandable = !!user.bio && isClamped;
+
   return (
-    <Card onClick={user.bio ? onToggle : undefined}>
+    <Card onClick={expandable ? onToggle : undefined}>
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="relative">
@@ -62,7 +74,7 @@ function AttendeeCard({
             {user.is_admin && (
               <Shield className="w-4 h-4 text-primary-600" />
             )}
-            {user.bio && (
+            {expandable && (
               <motion.div
                 animate={{ rotate: isExpanded ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
@@ -78,18 +90,12 @@ function AttendeeCard({
           </div>
 
           {user.bio && (
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={isExpanded ? 'expanded' : 'collapsed'}
-                initial={false}
-                animate={{ height: 'auto' }}
-                className="overflow-hidden"
-              >
-                <p className={`mt-2 text-sm text-gray-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
-                  <LinkedText text={user.bio} />
-                </p>
-              </motion.div>
-            </AnimatePresence>
+            <p
+              ref={bioRef}
+              className={`mt-2 text-sm text-gray-600 ${isExpanded ? '' : 'line-clamp-2'}`}
+            >
+              <LinkedText text={user.bio} />
+            </p>
           )}
 
           {/* Contact Info */}
