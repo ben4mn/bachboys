@@ -31,7 +31,7 @@
   &nbsp;&nbsp;
   <img src="docs/screenshots/payments-dark.png" alt="Payments" width="200" />
   &nbsp;&nbsp;
-  <img src="docs/screenshots/attendees-light.png" alt="Attendees" width="200" />
+  <img src="docs/screenshots/profile-dark.png" alt="Profile" width="200" />
 </p>
 
 ---
