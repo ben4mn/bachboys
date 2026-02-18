@@ -106,14 +106,14 @@ function AttendeeCard({
             )}
             {user.venmo_handle && (
               <a
-                href={`https://venmo.com/${user.venmo_handle}`}
+                href={`https://venmo.com/${user.venmo_handle.replace(/^@/, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1.5 text-sm text-primary-600"
               >
                 <AtSign className="w-4 h-4" />
-                {user.venmo_handle}
+                {user.venmo_handle.replace(/^@/, '')}
               </a>
             )}
           </div>
