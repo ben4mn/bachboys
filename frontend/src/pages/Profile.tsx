@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { LogOut, Check, Edit2, Settings, Camera, Sun, Moon, Monitor, Plane } from 'lucide-react';
+import { LogOut, Check, Edit2, Settings, Camera, Sun, Moon, Monitor, Plane, ChevronDown, AlertTriangle } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
@@ -143,7 +143,7 @@ function TravelDetails() {
               type="datetime-local"
               value={arrivalDatetime}
               onChange={(e) => setArrivalDatetime(e.target.value)}
-              className="input w-full min-w-0 max-w-full"
+              className="input w-full min-w-0 max-w-full text-sm"
             />
           </div>
           <div>
@@ -167,7 +167,7 @@ function TravelDetails() {
               type="datetime-local"
               value={departureDatetime}
               onChange={(e) => setDepartureDatetime(e.target.value)}
-              className="input w-full min-w-0 max-w-full"
+              className="input w-full min-w-0 max-w-full text-sm"
             />
           </div>
           <div className="flex gap-2">
@@ -216,6 +216,147 @@ function TravelDetails() {
         </div>
       ) : (
         <p className="text-sm text-gray-500 dark:text-gray-400">No flight info added yet</p>
+      )}
+    </Card>
+  );
+}
+
+function ThemeSection({ theme, setTheme }: { theme: string; setTheme: (t: 'light' | 'dark' | 'system') => void }) {
+  const [open, setOpen] = useState(false);
+  const currentLabel = themeOptions.find(t => t.value === theme)?.label || 'System';
+  const CurrentIcon = themeOptions.find(t => t.value === theme)?.icon || Monitor;
+
+  return (
+    <Card>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <CurrentIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </div>
+          <div className="text-left">
+            <div className="font-medium text-gray-900 dark:text-white">Theme</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{currentLabel}</div>
+          </div>
+        </div>
+        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="flex gap-2 mt-4">
+          {themeOptions.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              onClick={() => { setTheme(value); setOpen(false); }}
+              className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-lg border-2 transition-colors ${
+                theme === value
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                  : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-xs font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function TripStatusSection({ user, statusMutation }: { user: { trip_status: TripStatus }; statusMutation: ReturnType<typeof useMutation<any, any, TripStatus>> }) {
+  const [open, setOpen] = useState(false);
+  const [confirmingStatus, setConfirmingStatus] = useState<TripStatus | null>(null);
+  const currentOption = tripStatusOptions.find(o => o.value === user.trip_status);
+  const isConfirmed = user.trip_status === 'confirmed';
+
+  const handleSelect = (value: TripStatus) => {
+    if (value === user.trip_status) return;
+    if (isConfirmed && value !== 'confirmed') {
+      setConfirmingStatus(value);
+    } else {
+      statusMutation.mutate(value);
+      setOpen(false);
+    }
+  };
+
+  const confirmChange = () => {
+    if (confirmingStatus) {
+      statusMutation.mutate(confirmingStatus);
+      setConfirmingStatus(null);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <Card>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="text-left">
+          <div className="font-medium text-gray-900 dark:text-white">Change Trip Status</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Currently: {currentOption?.label || user.trip_status}
+          </div>
+        </div>
+        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="space-y-2 mt-4">
+          {confirmingStatus && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 rounded-lg mb-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                    You're currently confirmed for the trip.
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                    Changing your status may affect cost splits for everyone. Are you sure?
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={confirmChange}
+                      disabled={statusMutation.isPending}
+                      className="px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700"
+                    >
+                      {statusMutation.isPending ? <LoadingSpinner size="sm" /> : 'Yes, Change'}
+                    </button>
+                    <button
+                      onClick={() => setConfirmingStatus(null)}
+                      className="px-3 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {tripStatusOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleSelect(option.value)}
+              disabled={statusMutation.isPending}
+              className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
+                user.trip_status === option.value
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+              }`}
+            >
+              <div className="text-left">
+                <div className="font-medium dark:text-white">{option.label}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{option.description}</div>
+              </div>
+              {user.trip_status === option.value && (
+                <Check className="w-5 h-5 text-primary-600" />
+              )}
+            </button>
+          ))}
+        </div>
       )}
     </Card>
   );
@@ -358,58 +499,16 @@ export default function Profile() {
         )}
 
         {/* Theme */}
-        <Card>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Theme</h3>
-          <div className="flex gap-2">
-            {themeOptions.map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                onClick={() => setTheme(value)}
-                className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-lg border-2 transition-colors ${
-                  theme === value
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
-        </Card>
+        <ThemeSection theme={theme} setTheme={setTheme} />
 
         {/* Notifications */}
-        <NotificationSettings />
+        <NotificationSettings collapsible />
 
         {/* Travel Details */}
         <TravelDetails />
 
         {/* Trip Status */}
-        <Card>
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Trip Status</h3>
-          <div className="space-y-2">
-            {tripStatusOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => statusMutation.mutate(option.value)}
-                disabled={statusMutation.isPending}
-                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
-                  user.trip_status === option.value
-                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                }`}
-              >
-                <div className="text-left">
-                  <div className="font-medium dark:text-white">{option.label}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{option.description}</div>
-                </div>
-                {user.trip_status === option.value && (
-                  <Check className="w-5 h-5 text-primary-600" />
-                )}
-              </button>
-            ))}
-          </div>
-        </Card>
+        <TripStatusSection user={user} statusMutation={statusMutation} />
 
         {/* Profile Details */}
         <Card>

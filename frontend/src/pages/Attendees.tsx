@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Phone, AtSign, Crown, Shield, ChevronDown, UserPlus, Plane, PlaneLanding, PlaneTakeoff } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -241,8 +241,71 @@ function AttendeeCard({
   );
 }
 
+function AlphabetNav({ letters, onSelect }: { letters: string[]; onSelect: (letter: string) => void }) {
+  const navRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState<string | null>(null);
+
+  const getLetterFromTouch = useCallback((clientY: number) => {
+    const nav = navRef.current;
+    if (!nav) return null;
+    const rect = nav.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const index = Math.floor((y / rect.height) * letters.length);
+    if (index >= 0 && index < letters.length) return letters[index];
+    return null;
+  }, [letters]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    const letter = getLetterFromTouch(e.touches[0].clientY);
+    if (letter) { setActive(letter); onSelect(letter); }
+  }, [getLetterFromTouch, onSelect]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    const letter = getLetterFromTouch(e.touches[0].clientY);
+    if (letter && letter !== active) { setActive(letter); onSelect(letter); }
+  }, [getLetterFromTouch, onSelect, active]);
+
+  const handleTouchEnd = useCallback(() => {
+    setActive(null);
+  }, []);
+
+  if (letters.length < 4) return null;
+
+  return (
+    <div
+      ref={navRef}
+      className="fixed right-0.5 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center py-2 select-none touch-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {active && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-primary-600 text-white rounded-2xl flex items-center justify-center text-2xl font-bold shadow-lg pointer-events-none">
+          {active}
+        </div>
+      )}
+      {letters.map((letter) => (
+        <button
+          key={letter}
+          onClick={() => onSelect(letter)}
+          className={`w-6 h-5 flex items-center justify-center text-[10px] font-semibold transition-colors ${
+            active === letter
+              ? 'text-primary-600 dark:text-primary-400 scale-125'
+              : 'text-gray-400 dark:text-gray-500'
+          }`}
+        >
+          {letter}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function Attendees() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: getUsers,
@@ -259,11 +322,33 @@ export default function Attendees() {
 
   const confirmedCount = users?.filter((u) => u.trip_status === 'confirmed').length || 0;
 
+  // Build the set of available first-letters
+  const availableLetters = useMemo(() => {
+    if (!sortedUsers) return [];
+    const set = new Set<string>();
+    sortedUsers.forEach(u => {
+      const first = u.display_name.charAt(0).toUpperCase();
+      if (/[A-Z]/.test(first)) set.add(first);
+    });
+    return Array.from(set).sort();
+  }, [sortedUsers]);
+
+  const scrollToLetter = useCallback((letter: string) => {
+    if (!sortedUsers) return;
+    const user = sortedUsers.find(u => u.display_name.charAt(0).toUpperCase() === letter);
+    if (user) {
+      const el = cardRefs.current[user.id];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [sortedUsers]);
+
   return (
     <>
       <Header title="The Crew" />
 
-      <main className="px-4 py-4 max-w-lg mx-auto">
+      <main className="px-4 pr-7 py-4 max-w-lg mx-auto">
         {isLoading && (
           <div className="flex justify-center py-12">
             <LoadingSpinner size="lg" />
@@ -289,14 +374,17 @@ export default function Attendees() {
             {/* Attendee List */}
             <div className="space-y-3">
               {sortedUsers.map((user) => (
-                <AttendeeCard
-                  key={user.id}
-                  user={user}
-                  isExpanded={expandedId === user.id}
-                  onToggle={() => setExpandedId(expandedId === user.id ? null : user.id)}
-                />
+                <div key={user.id} ref={(el) => { cardRefs.current[user.id] = el; }}>
+                  <AttendeeCard
+                    user={user}
+                    isExpanded={expandedId === user.id}
+                    onToggle={() => setExpandedId(expandedId === user.id ? null : user.id)}
+                  />
+                </div>
               ))}
             </div>
+
+            <AlphabetNav letters={availableLetters} onSelect={scrollToLetter} />
           </>
         )}
       </main>
