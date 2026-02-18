@@ -93,17 +93,17 @@ async function seed() {
 
     // --- Seed events ---
 
-    // Friday Apr 3: Check-in
+    // Friday Apr 3: Check-in (also carries the VRBO cost)
     await client.query(
-      `INSERT INTO events (title, description, location, location_url, start_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `INSERT INTO events (title, description, location, location_url, start_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         'VRBO Check-In',
-        'Check in at the VRBO.',
+        `Check in at the VRBO. House rental total: $${VRBO_TOTAL.toLocaleString()} — split across all ${GUEST_COUNT} guests.`,
         VRBO_LOCATION,
         'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
         '2026-04-03T16:00:00-07:00',
-        true, 0, 'even', 'travel', benId,
+        true, VRBO_TOTAL, 'even', false, 'travel', benId,
       ]
     );
 
@@ -193,21 +193,6 @@ async function seed() {
         'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
         '2026-04-05T10:00:00-07:00',
         true, 0, 'even', 'travel', benId,
-      ]
-    );
-
-    // VRBO Accommodation (cost event spanning the trip)
-    await client.query(
-      `INSERT INTO events (title, description, location, location_url, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      [
-        'VRBO Accommodation',
-        `House rental for the weekend. Total: $${VRBO_TOTAL}. Split across all ${GUEST_COUNT} guests.`,
-        VRBO_LOCATION,
-        'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
-        '2026-04-03T16:00:00-07:00',
-        '2026-04-05T10:00:00-07:00',
-        true, VRBO_TOTAL, 'even', false, 'accommodation', benId,
       ]
     );
 
