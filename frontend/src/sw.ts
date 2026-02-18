@@ -7,7 +7,7 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
 declare let self: ServiceWorkerGlobalScope;
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 
 // Clean up old caches
 cleanupOutdatedCaches();
