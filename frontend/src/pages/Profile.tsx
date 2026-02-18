@@ -122,57 +122,53 @@ function TravelDetails() {
 
       {isEditing ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Arrival Flight
-              </label>
-              <input
-                type="text"
-                value={arrivalFlight}
-                onChange={(e) => setArrivalFlight(e.target.value)}
-                className="input"
-                placeholder="e.g., DL1234"
-                maxLength={20}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Arrival Date/Time
-              </label>
-              <input
-                type="datetime-local"
-                value={arrivalDatetime}
-                onChange={(e) => setArrivalDatetime(e.target.value)}
-                className="input"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Arrival Flight
+            </label>
+            <input
+              type="text"
+              value={arrivalFlight}
+              onChange={(e) => setArrivalFlight(e.target.value)}
+              className="input"
+              placeholder="e.g., DL1234"
+              maxLength={20}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Departure Flight
-              </label>
-              <input
-                type="text"
-                value={departureFlight}
-                onChange={(e) => setDepartureFlight(e.target.value)}
-                className="input"
-                placeholder="e.g., WN5678"
-                maxLength={20}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Departure Date/Time
-              </label>
-              <input
-                type="datetime-local"
-                value={departureDatetime}
-                onChange={(e) => setDepartureDatetime(e.target.value)}
-                className="input"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Arrival Date/Time
+            </label>
+            <input
+              type="datetime-local"
+              value={arrivalDatetime}
+              onChange={(e) => setArrivalDatetime(e.target.value)}
+              className="input w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Departure Flight
+            </label>
+            <input
+              type="text"
+              value={departureFlight}
+              onChange={(e) => setDepartureFlight(e.target.value)}
+              className="input"
+              placeholder="e.g., WN5678"
+              maxLength={20}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Departure Date/Time
+            </label>
+            <input
+              type="datetime-local"
+              value={departureDatetime}
+              onChange={(e) => setDepartureDatetime(e.target.value)}
+              className="input w-full"
+            />
           </div>
           <div className="flex gap-2">
             <button
