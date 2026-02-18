@@ -101,7 +101,7 @@ async function start() {
     // Recalculate all even-split event costs on startup
     // Ensures costs are in sync after deploys or manual DB changes
     const evenEvents = await query<{ id: string }>(
-      `SELECT id FROM events WHERE split_type = 'even' AND total_cost > 0`
+      `SELECT id FROM events WHERE split_type IN ('even', 'fixed') AND total_cost > 0`
     );
     for (const event of evenEvents) {
       await recalculateEventCosts(event.id);

@@ -59,23 +59,23 @@ function AddUserModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Add Attendee</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold dark:text-white">Add Attendee</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Display Name *
             </label>
             <input
@@ -89,7 +89,7 @@ function AddUserModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Username *
             </label>
             <input
@@ -103,7 +103,7 @@ function AddUserModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email *
             </label>
             <input
@@ -118,7 +118,7 @@ function AddUserModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Temporary Password *
             </label>
             <input
@@ -227,8 +227,8 @@ export default function AdminUsers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-          <p className="text-gray-600">Manage party attendees</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Users</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage party attendees</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -249,20 +249,20 @@ export default function AdminUsers() {
       {users && (
         <div className="grid grid-cols-3 gap-4">
           <Card className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{users.length}</div>
-            <div className="text-sm text-gray-500">Total Invited</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{users.length}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Total Invited</div>
           </Card>
           <Card className="text-center">
             <div className="text-2xl font-bold text-green-600">
               {users.filter((u) => u.trip_status === 'confirmed').length}
             </div>
-            <div className="text-sm text-gray-500">Confirmed</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Confirmed</div>
           </Card>
           <Card className="text-center">
             <div className="text-2xl font-bold text-yellow-600">
               {users.filter((u) => u.trip_status === 'maybe' || u.trip_status === 'invited').length}
             </div>
-            <div className="text-sm text-gray-500">Pending</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
           </Card>
         </div>
       )}
@@ -286,11 +286,11 @@ export default function AdminUsers() {
 
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900">{user.display_name}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{user.display_name}</h3>
                     {user.is_admin && <Badge variant="info">Admin</Badge>}
                     {user.is_groom && <Badge variant="warning">Groom</Badge>}
                   </div>
-                  <p className="text-sm text-gray-500">@{user.username}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
                   <div className="mt-1">{getTripStatusBadge(user.trip_status)}</div>
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default function AdminUsers() {
                   className={`p-2 rounded transition-colors ${
                     user.is_groom
                       ? 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100'
-                      : 'text-gray-400 hover:text-yellow-600 hover:bg-gray-100'
+                      : 'text-gray-400 hover:text-yellow-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   title={user.is_groom ? 'Remove groom status' : 'Set as groom'}
                 >
@@ -314,7 +314,7 @@ export default function AdminUsers() {
                   className={`p-2 rounded transition-colors ${
                     user.is_admin
                       ? 'text-primary-600 bg-primary-50 hover:bg-primary-100'
-                      : 'text-gray-400 hover:text-primary-600 hover:bg-gray-100'
+                      : 'text-gray-400 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700'
                   } ${user.id === currentUser?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title={user.is_admin ? 'Remove admin' : 'Make admin'}
                 >
@@ -328,7 +328,7 @@ export default function AdminUsers() {
                 <button
                   onClick={() => handleDelete(user)}
                   disabled={deleteMutation.isPending || user.id === currentUser?.id}
-                  className={`p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded ${
+                  className={`p-2 text-gray-400 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded ${
                     user.id === currentUser?.id ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   title="Remove from party"
@@ -340,7 +340,7 @@ export default function AdminUsers() {
 
             {/* Contact Info */}
             {(user.phone || user.venmo_handle) && (
-              <div className="mt-3 pt-3 border-t flex gap-4 text-sm text-gray-600">
+              <div className="mt-3 pt-3 border-t dark:border-gray-700 flex gap-4 text-sm text-gray-600 dark:text-gray-400">
                 {user.phone && <span>Phone: {user.phone}</span>}
                 {user.venmo_handle && <span>Venmo: @{user.venmo_handle}</span>}
               </div>

@@ -86,22 +86,22 @@ export default function AdminNotifications() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-        <p className="text-gray-600">Send push notifications to attendees</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+        <p className="text-gray-600 dark:text-gray-400">Send push notifications to attendees</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Bell className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <Bell className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {stats?.subscribed || 0}
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 of {stats?.total_confirmed || 0} subscribed
               </div>
             </div>
@@ -110,14 +110,14 @@ export default function AdminNotifications() {
 
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Send className="w-6 h-6 text-blue-600" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Send className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {history?.length || 0}
               </div>
-              <div className="text-sm text-gray-500">notifications sent</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">notifications sent</div>
             </div>
           </div>
         </Card>
@@ -125,16 +125,16 @@ export default function AdminNotifications() {
 
       {/* Send Notification Form */}
       <Card>
-        <h2 className="font-semibold text-gray-900 mb-4">Send Notification</h2>
+        <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Send Notification</h2>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
 
         {result && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
             <CheckCircle className="w-5 h-5" />
             Sent to {result.sent} users
             {result.failed > 0 && ` (${result.failed} failed)`}
@@ -143,7 +143,7 @@ export default function AdminNotifications() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Title *
             </label>
             <input
@@ -157,7 +157,7 @@ export default function AdminNotifications() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Message *
             </label>
             <textarea
@@ -173,7 +173,7 @@ export default function AdminNotifications() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Type
               </label>
               <select {...register('type')} className="input">
@@ -186,7 +186,7 @@ export default function AdminNotifications() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Target
               </label>
               <select {...register('target')} className="input">
@@ -198,7 +198,7 @@ export default function AdminNotifications() {
 
           {target === 'event' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Event
               </label>
               <select {...register('eventId')} className="input">
@@ -231,7 +231,7 @@ export default function AdminNotifications() {
 
       {/* Notification History */}
       <Card>
-        <h2 className="font-semibold text-gray-900 mb-4">Recent Notifications</h2>
+        <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Recent Notifications</h2>
 
         {historyLoading && (
           <div className="flex justify-center py-8">
@@ -240,8 +240,8 @@ export default function AdminNotifications() {
         )}
 
         {!historyLoading && history && history.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Bell className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <Bell className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
             No notifications sent yet
           </div>
         )}
@@ -250,18 +250,18 @@ export default function AdminNotifications() {
           {history?.map((notification) => (
             <div
               key={notification.id}
-              className="p-3 border rounded-lg"
+              className="p-3 border dark:border-gray-700 rounded-lg"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-medium">{notification.title}</div>
-                  <div className="text-sm text-gray-600 mt-1">
+                  <div className="font-medium dark:text-white">{notification.title}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {notification.body}
                   </div>
                 </div>
                 <Badge>{notification.type}</Badge>
               </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                 <span>
                   Sent by {notification.sent_by_name}
                 </span>

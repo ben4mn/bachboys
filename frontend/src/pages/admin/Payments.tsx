@@ -44,25 +44,25 @@ function PaymentRow({
   isPending: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between p-4 border-b last:border-0">
+    <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 last:border-0">
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium">{payment.user_display_name}</span>
+          <span className="font-medium dark:text-white">{payment.user_display_name}</span>
           <PaymentStatusBadge status={payment.status} />
         </div>
-        <div className="text-sm text-gray-600 mt-1">
+        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
           {payment.event_title || 'General Payment'}
           {payment.payment_method && (
-            <span className="text-gray-400 ml-2">via {payment.payment_method}</span>
+            <span className="text-gray-400 dark:text-gray-500 ml-2">via {payment.payment_method}</span>
           )}
         </div>
         {payment.paid_at && (
-          <div className="text-xs text-gray-400 mt-1">
+          <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             {format(parseISO(payment.paid_at), 'MMM d, yyyy @ h:mm a')}
           </div>
         )}
         {payment.notes && (
-          <div className="text-sm text-gray-500 mt-1 italic">{payment.notes}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">{payment.notes}</div>
         )}
       </div>
 
@@ -76,7 +76,7 @@ function PaymentRow({
             <button
               onClick={onConfirm}
               disabled={isPending}
-              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+              className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
               title="Confirm payment"
             >
               <Check className="w-5 h-5" />
@@ -84,7 +84,7 @@ function PaymentRow({
             <button
               onClick={onReject}
               disabled={isPending}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
               title="Reject payment"
             >
               <X className="w-5 h-5" />
@@ -101,14 +101,14 @@ function BalanceCard({ balance }: { balance: UserBalance }) {
   const isPaid = balance.balance_remaining <= 0 && balance.total_owed > 0;
 
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg">
+    <div className="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-medium">
           {balance.display_name.charAt(0).toUpperCase()}
         </div>
         <div>
-          <div className="font-medium">{balance.display_name}</div>
-          <div className="text-sm text-gray-500">
+          <div className="font-medium dark:text-white">{balance.display_name}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             Paid: {formatCurrency(balance.total_paid)} / {formatCurrency(balance.total_owed)}
           </div>
         </div>
@@ -168,20 +168,20 @@ export default function AdminPayments() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
-        <p className="text-gray-600">Track and confirm payments</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Payments</h1>
+        <p className="text-gray-600 dark:text-gray-400">Track and confirm payments</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <div className="text-sm text-gray-500">Collected</div>
-              <div className="text-xl font-bold text-green-600">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Collected</div>
+              <div className="text-xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(totalCollected)}
               </div>
             </div>
@@ -190,12 +190,12 @@ export default function AdminPayments() {
 
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <Clock className="w-6 h-6 text-yellow-600" />
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <div className="text-sm text-gray-500">Pending Review</div>
-              <div className="text-xl font-bold text-yellow-600">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Pending Review</div>
+              <div className="text-xl font-bold text-yellow-600 dark:text-yellow-400">
                 {formatCurrency(totalPending)}
               </div>
             </div>
@@ -204,12 +204,12 @@ export default function AdminPayments() {
 
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <TrendingDown className="w-6 h-6 text-red-600" />
+            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+              <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <div className="text-sm text-gray-500">Outstanding</div>
-              <div className="text-xl font-bold text-red-600">
+              <div className="text-sm text-gray-500 dark:text-gray-400">Outstanding</div>
+              <div className="text-xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(totalOwed - totalCollected)}
               </div>
             </div>
@@ -218,18 +218,18 @@ export default function AdminPayments() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b">
+      <div className="flex gap-1 border-b dark:border-gray-700">
         <button
           onClick={() => setTab('payments')}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             tab === 'payments'
               ? 'border-primary-600 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Payments
           {pendingPayments.length > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+            <span className="ml-2 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded-full">
               {pendingPayments.length}
             </span>
           )}
@@ -239,7 +239,7 @@ export default function AdminPayments() {
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             tab === 'balances'
               ? 'border-primary-600 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Balances
@@ -257,8 +257,8 @@ export default function AdminPayments() {
           {/* Pending Payments */}
           {pendingPayments.length > 0 && (
             <Card>
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-yellow-600" />
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                 Pending Confirmation ({pendingPayments.length})
               </h2>
               <div className="-mx-4">
@@ -280,7 +280,7 @@ export default function AdminPayments() {
           )}
 
           {pendingPayments.length === 0 && (
-            <Card className="text-center py-8 text-gray-500">
+            <Card className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Check className="w-12 h-12 mx-auto text-green-500 mb-2" />
               No payments pending review
             </Card>
@@ -289,8 +289,8 @@ export default function AdminPayments() {
           {/* Confirmed Payments */}
           {confirmedPayments.length > 0 && (
             <Card>
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Check className="w-5 h-5 text-green-600" />
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
                 Confirmed ({confirmedPayments.length})
               </h2>
               <div className="-mx-4">
@@ -310,8 +310,8 @@ export default function AdminPayments() {
           {/* Rejected Payments */}
           {rejectedPayments.length > 0 && (
             <Card>
-              <h2 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <X className="w-5 h-5 text-red-600" />
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                <X className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Rejected ({rejectedPayments.length})
               </h2>
               <div className="-mx-4">
@@ -334,7 +334,7 @@ export default function AdminPayments() {
 
       {!isLoading && tab === 'balances' && (
         <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">User Balances</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">User Balances</h2>
           <div className="space-y-2">
             {balances?.map((balance) => (
               <BalanceCard key={balance.user_id} balance={balance} />
@@ -342,8 +342,8 @@ export default function AdminPayments() {
           </div>
 
           {balances?.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <DollarSign className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <DollarSign className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
               No cost assignments yet
             </div>
           )}

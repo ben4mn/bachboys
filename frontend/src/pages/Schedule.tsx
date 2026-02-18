@@ -64,7 +64,9 @@ function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
 
           {Number(event.total_cost) > 0 && (
             <div className="text-sm font-medium text-primary-600">
-              ${Number(event.total_cost).toFixed(0)} total
+              {event.split_type === 'fixed'
+                ? `$${Number(event.total_cost).toFixed(0)}/person`
+                : `$${Number(event.total_cost).toLocaleString()} total`}
             </div>
           )}
 

@@ -22,19 +22,19 @@ interface StatCardProps {
 
 function StatCard({ title, value, subtitle, icon: Icon, color }: StatCardProps) {
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
+    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+    green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+    purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+    orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
   };
 
   return (
     <Card>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>}
         </div>
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-6 h-6" />
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 
   if (error || !stats) {
     return (
-      <div className="p-4 bg-red-50 rounded-lg text-red-700 text-center">
+      <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-400 text-center">
         Failed to load dashboard stats
       </div>
     );
@@ -73,8 +73,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Overview of the bachelor party</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Overview of the bachelor party</p>
       </div>
 
       {/* Stats Grid */}
@@ -112,42 +112,42 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
           <div className="space-y-2">
             <a
               href="/admin/events"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="font-medium">Add Event</div>
-                <div className="text-sm text-gray-500">Create a new activity</div>
+                <div className="font-medium dark:text-white">Add Event</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Create a new activity</div>
               </div>
             </a>
             <a
               href="/admin/users"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <div className="font-medium">Invite Attendee</div>
-                <div className="text-sm text-gray-500">Add someone to the party</div>
+                <div className="font-medium dark:text-white">Invite Attendee</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Add someone to the party</div>
               </div>
             </a>
             <a
               href="/admin/payments"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <div className="font-medium">Confirm Payments</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium dark:text-white">Confirm Payments</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   {stats.payments.pending_count} awaiting confirmation
                 </div>
               </div>
@@ -156,14 +156,14 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <h2 className="font-semibold text-gray-900 mb-4">Payment Progress</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Payment Progress</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Collected</span>
+                <span className="text-gray-600 dark:text-gray-400">Collected</span>
                 <span className="font-medium">{collectionRate}%</span>
               </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all"
                   style={{ width: `${collectionRate}%` }}
@@ -172,14 +172,14 @@ export default function AdminDashboard() {
             </div>
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
-                <div className="text-sm text-gray-500">Outstanding</div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Outstanding</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formatCurrency(stats.payments.total_owed - stats.payments.total_collected)}
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Pending Review</div>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-sm text-gray-500 dark:text-gray-400">Pending Review</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
                   {stats.payments.pending_count} payments
                 </div>
               </div>

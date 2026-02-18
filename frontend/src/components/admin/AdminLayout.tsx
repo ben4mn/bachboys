@@ -20,7 +20,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Top Navigation */}
       <nav className="bg-gray-900 text-white">
         <div className="max-w-5xl mx-auto px-4">
@@ -41,7 +41,7 @@ export function AdminLayout() {
       </nav>
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto">
             {adminNavItems.map(({ to, icon: Icon, label, end }) => (
@@ -54,7 +54,7 @@ export function AdminLayout() {
                     'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                     isActive
                       ? 'border-primary-600 text-primary-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300'
                   )
                 }
               >

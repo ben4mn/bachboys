@@ -22,7 +22,7 @@ export async function recalculateEventCosts(eventId: string): Promise<void> {
   );
 
   if (!event) return;
-  if (event.split_type !== 'even') return;
+  if (event.split_type === 'custom') return;
   if (Number(event.total_cost) === 0) return;
 
   let payingAttendees: { id: string }[];
@@ -59,11 +59,39 @@ export async function recalculateEventCosts(eventId: string): Promise<void> {
   if (payingAttendees.length === 0) return;
 
   const totalCost = Number(event.total_cost);
-  const perPersonCost = totalCost / payingAttendees.length;
+  let perPersonCost: number;
+  let note: string;
 
-  const note = event.exclude_groom
-    ? `$${totalCost.toFixed(0)} ÷ ${payingAttendees.length} (covers groom)`
-    : `Even split`;
+  if (event.split_type === 'fixed') {
+    // totalCost is the per-person rate
+    if (event.exclude_groom) {
+      // Get all attendees (including groom) to compute absorbed cost
+      let allAttendees: { id: string }[];
+      if (event.is_mandatory) {
+        allAttendees = await query<{ id: string }>(
+          `SELECT id FROM users WHERE trip_status = 'confirmed'`
+        );
+      } else {
+        allAttendees = await query<{ id: string }>(
+          `SELECT u.id FROM users u
+           JOIN rsvps r ON u.id = r.user_id AND r.event_id = $1
+           WHERE r.status = 'confirmed'`,
+          [eventId]
+        );
+      }
+      perPersonCost = (totalCost * allAttendees.length) / payingAttendees.length;
+      note = `$${totalCost.toFixed(0)}/person (covers groom)`;
+    } else {
+      perPersonCost = totalCost;
+      note = `$${totalCost.toFixed(0)}/person`;
+    }
+  } else {
+    // even split: totalCost is the group total
+    perPersonCost = totalCost / payingAttendees.length;
+    note = event.exclude_groom
+      ? `$${totalCost.toFixed(0)} ÷ ${payingAttendees.length} (covers groom)`
+      : `Even split`;
+  }
 
   for (const attendee of payingAttendees) {
     await query(
@@ -102,7 +130,7 @@ export async function recalculateEventCosts(eventId: string): Promise<void> {
  */
 export async function recalculateAllMandatoryCosts(): Promise<void> {
   const events = await query<{ id: string }>(
-    `SELECT id FROM events WHERE is_mandatory = true AND split_type = 'even' AND total_cost > 0`
+    `SELECT id FROM events WHERE is_mandatory = true AND split_type IN ('even', 'fixed') AND total_cost > 0`
   );
 
   for (const event of events) {
