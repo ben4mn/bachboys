@@ -139,12 +139,26 @@ function TravelDetails() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Arrival Date/Time
             </label>
-            <input
-              type="datetime-local"
-              value={arrivalDatetime}
-              onChange={(e) => setArrivalDatetime(e.target.value)}
-              className="input w-full min-w-0 max-w-full text-sm"
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={arrivalDatetime?.split('T')[0] || ''}
+                onChange={(e) => {
+                  const time = arrivalDatetime?.split('T')[1] || '12:00';
+                  setArrivalDatetime(e.target.value ? `${e.target.value}T${time}` : '');
+                }}
+                className="input flex-1 min-w-0 text-sm"
+              />
+              <input
+                type="time"
+                value={arrivalDatetime?.split('T')[1] || ''}
+                onChange={(e) => {
+                  const date = arrivalDatetime?.split('T')[0] || '';
+                  if (date) setArrivalDatetime(`${date}T${e.target.value}`);
+                }}
+                className="input w-28 min-w-0 text-sm"
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -163,12 +177,26 @@ function TravelDetails() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Departure Date/Time
             </label>
-            <input
-              type="datetime-local"
-              value={departureDatetime}
-              onChange={(e) => setDepartureDatetime(e.target.value)}
-              className="input w-full min-w-0 max-w-full text-sm"
-            />
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={departureDatetime?.split('T')[0] || ''}
+                onChange={(e) => {
+                  const time = departureDatetime?.split('T')[1] || '12:00';
+                  setDepartureDatetime(e.target.value ? `${e.target.value}T${time}` : '');
+                }}
+                className="input flex-1 min-w-0 text-sm"
+              />
+              <input
+                type="time"
+                value={departureDatetime?.split('T')[1] || ''}
+                onChange={(e) => {
+                  const date = departureDatetime?.split('T')[0] || '';
+                  if (date) setDepartureDatetime(`${date}T${e.target.value}`);
+                }}
+                className="input w-28 min-w-0 text-sm"
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <button
