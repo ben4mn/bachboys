@@ -22,8 +22,8 @@ const GUESTS = [
 
 const VRBO_LOCATION = '723 Seclusion Glen Ave, Las Vegas NV';
 const VRBO_TOTAL = 2528;
-const GUEST_COUNT = 14; // excludes groom for cost split
-const PER_PERSON_COST = Math.round((VRBO_TOTAL / GUEST_COUNT) * 100) / 100; // ~$180.57
+const GUEST_COUNT = 15; // all guests split evenly (groom pays too)
+const PER_PERSON_COST = Math.round((VRBO_TOTAL / GUEST_COUNT) * 100) / 100; // ~$168.53
 
 async function seed() {
   const client = await pool.connect();
@@ -95,43 +95,32 @@ async function seed() {
 
     // Friday Apr 3: Check-in
     await client.query(
-      `INSERT INTO events (title, description, location, start_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO events (title, description, location, location_url, start_time, is_mandatory, total_cost, split_type, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         'VRBO Check-In',
         'Check in at the VRBO.',
         VRBO_LOCATION,
+        'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
         '2026-04-03T16:00:00-07:00',
         true, 0, 'even', 'travel', benId,
       ]
     );
 
-    // Friday Apr 3: F1 Go Kart (optional)
-    const gokartTotal = 15 * 100; // $100/person x 15
-    const gokartPerPerson = Math.round((gokartTotal / GUEST_COUNT) * 100) / 100;
-    const gokartResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id`,
+    // Friday Apr 3: F1 Drive (optional)
+    await client.query(
+      `INSERT INTO events (title, description, location, location_url, event_url, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
-        'F1 Go Kart Racing',
-        '3 races. ~$100 per person. Groom races free.',
-        'Las Vegas',
+        'F1 Drive — Elite Experience',
+        'F1 Drive at Grand Prix Plaza. Full-speed karting, 2x 15-min sessions with photo finish and podium celebration. $99 per person.',
+        'Grand Prix Plaza, Las Vegas',
+        'https://maps.google.com/?q=Grand+Prix+Plaza,+Las+Vegas',
+        'https://www.grandprixplaza.com/f1-drive/',
         '2026-04-03T19:00:00-07:00',
         '2026-04-03T21:00:00-07:00',
-        false, gokartTotal, 'even', true, 'activity', benId,
+        false, 99, 'fixed', false, 'activity', benId,
       ]
-    );
-    const gokartEventId = gokartResult.rows[0].id;
-
-    // Gokart costs for pre-created users
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [gokartEventId, nickId, 0, 'Groom — covered by the crew']
-    );
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [gokartEventId, benId, gokartPerPerson, `$${gokartTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Saturday Apr 4: Poker at VRBO
@@ -140,7 +129,7 @@ async function seed() {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         'Poker Tournament',
-        'Texas Hold \'em at the VRBO. Bring your game face.',
+        'Texas Hold \'em at the VRBO. Buy-in TBD. Bring your game face.',
         VRBO_LOCATION,
         '2026-04-04T13:00:00-07:00',
         false, 0, 'even', 'activity', benId,
@@ -162,98 +151,64 @@ async function seed() {
     );
 
     // Saturday Apr 4: Dinner at Cote
-    const coteTotal = 15 * 100; // ~$100+/person
-    const cotePerPerson = Math.round((coteTotal / GUEST_COUNT) * 100) / 100;
-    const coteResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id`,
+    await client.query(
+      `INSERT INTO events (title, description, location, location_url, event_url, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         'Dinner at Cote',
-        'Korean steakhouse. ~$100+ per person. Groom eats free.',
-        'Cote Las Vegas',
+        'Korean steakhouse at The Venetian. ~$100+ per person. Groom eats free.',
+        'Cote, The Venetian Resort',
+        'https://maps.google.com/?q=3355+S+Las+Vegas+Blvd,+Las+Vegas+NV',
+        'https://www.cotekoreansteakhouse.com/locations/cotevegas',
         '2026-04-04T19:00:00-07:00',
         '2026-04-04T21:00:00-07:00',
-        true, coteTotal, 'even', true, 'food', benId,
+        true, 1500, 'even', true, 'food', benId,
       ]
-    );
-    const coteEventId = coteResult.rows[0].id;
-
-    // Cote costs for pre-created users
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [coteEventId, nickId, 0, 'Groom — covered by the crew']
-    );
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [coteEventId, benId, cotePerPerson, `$${coteTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Saturday Apr 4: Empire Strips Back (optional)
-    const empireTotal = 15 * 80; // $80/person
-    const empirePerPerson = Math.round((empireTotal / GUEST_COUNT) * 100) / 100;
-    const empireResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id`,
+    await client.query(
+      `INSERT INTO events (title, description, location, location_url, event_url, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
       [
         'Empire Strips Back',
-        'Burlesque show. ~$80 per person. Groom gets in free.',
-        'Las Vegas',
+        'Star Wars burlesque parody at the Rio. ~$80 per person. Groom gets in free.',
+        'Rio Hotel and Casino, Las Vegas',
+        'https://maps.google.com/?q=Rio+Hotel+and+Casino,+Las+Vegas',
+        'https://theempirestripsback.com/las-vegas/',
         '2026-04-04T21:30:00-07:00',
         '2026-04-04T23:30:00-07:00',
-        false, empireTotal, 'even', true, 'party', benId,
+        false, 80, 'fixed', true, 'party', benId,
       ]
-    );
-    const empireEventId = empireResult.rows[0].id;
-
-    // Empire costs for pre-created users
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [empireEventId, nickId, 0, 'Groom — covered by the crew']
-    );
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [empireEventId, benId, empirePerPerson, `$${empireTotal} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     // Sunday Apr 5: Check-out
     await client.query(
-      `INSERT INTO events (title, description, location, start_time, is_mandatory, total_cost, split_type, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      `INSERT INTO events (title, description, location, location_url, start_time, is_mandatory, total_cost, split_type, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         'VRBO Check-Out',
         'Check out by 10 AM. Clean up and head out!',
         VRBO_LOCATION,
+        'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
         '2026-04-05T10:00:00-07:00',
         true, 0, 'even', 'travel', benId,
       ]
     );
 
     // VRBO Accommodation (cost event spanning the trip)
-    const vrboResult = await client.query(
-      `INSERT INTO events (title, description, location, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id`,
+    await client.query(
+      `INSERT INTO events (title, description, location, location_url, start_time, end_time, is_mandatory, total_cost, split_type, exclude_groom, category, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
       [
         'VRBO Accommodation',
-        `House rental for the weekend. Total: $${VRBO_TOTAL}. Split across ${GUEST_COUNT} guests (~$${PER_PERSON_COST} each). Groom stays free.`,
+        `House rental for the weekend. Total: $${VRBO_TOTAL}. Split across all ${GUEST_COUNT} guests.`,
         VRBO_LOCATION,
+        'https://maps.google.com/?q=723+Seclusion+Glen+Ave,+Las+Vegas+NV',
         '2026-04-03T16:00:00-07:00',
         '2026-04-05T10:00:00-07:00',
-        true, VRBO_TOTAL, 'even', true, 'accommodation', benId,
+        true, VRBO_TOTAL, 'even', false, 'accommodation', benId,
       ]
-    );
-    const vrboEventId = vrboResult.rows[0].id;
-
-    // VRBO costs for pre-created users
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [vrboEventId, nickId, 0, 'Groom — covered by the crew']
-    );
-    await client.query(
-      `INSERT INTO event_costs (event_id, user_id, amount, notes) VALUES ($1, $2, $3, $4)`,
-      [vrboEventId, benId, PER_PERSON_COST, `$${VRBO_TOTAL} ÷ ${GUEST_COUNT} guests (covers groom)`]
     );
 
     logger.info('Created all events with cost splits');
@@ -264,8 +219,8 @@ async function seed() {
     console.log('\n--- Seed Summary ---');
     console.log(`Guest list: ${GUESTS.length} entries`);
     console.log(`Pre-created users: Nick Fleming (groom), Ben Foreman (admin)`);
-    console.log(`Events: VRBO Check-In, VRBO Check-Out, VRBO Accommodation ($${VRBO_TOTAL})`);
-    console.log(`Cost per guest: $${PER_PERSON_COST} (groom: $0)`);
+    console.log(`Events: VRBO Check-In, F1 Drive, Poker, Gambling, Cote, Empire, VRBO Check-Out, VRBO Accommodation`);
+    console.log(`VRBO per guest: $${PER_PERSON_COST} (all ${GUEST_COUNT} guests)`);
     console.log('\nTest Accounts:');
     console.log('  Nick (groom/admin): nick / groom123');
     console.log('  Ben (admin):        ben / admin123');

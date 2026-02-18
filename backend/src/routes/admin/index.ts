@@ -212,10 +212,30 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
       throw new AppError('Event not found', 404);
     }
 
-    // Get paying attendees (exclude groom if needed)
-    const payingAttendees = event.exclude_groom
-      ? await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed' AND is_groom = false`)
-      : await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
+    // Get paying attendees based on mandatory vs optional
+    let payingAttendees: User[];
+
+    if (event.is_mandatory) {
+      // Mandatory: all confirmed-trip users
+      payingAttendees = event.exclude_groom
+        ? await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed' AND is_groom = false`)
+        : await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
+    } else {
+      // Optional: only users with confirmed RSVP
+      payingAttendees = event.exclude_groom
+        ? await query<User>(
+            `SELECT u.* FROM users u
+             JOIN rsvps r ON u.id = r.user_id AND r.event_id = $1
+             WHERE r.status = 'confirmed' AND u.is_groom = false`,
+            [req.params.id]
+          )
+        : await query<User>(
+            `SELECT u.* FROM users u
+             JOIN rsvps r ON u.id = r.user_id AND r.event_id = $1
+             WHERE r.status = 'confirmed'`,
+            [req.params.id]
+          );
+    }
 
     if (payingAttendees.length === 0) {
       throw new AppError('No confirmed attendees to split costs', 400);
@@ -228,7 +248,18 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
     if (event.split_type === 'fixed') {
       // totalCost is the per-person rate
       if (event.exclude_groom) {
-        const allAttendees = await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
+        // Get all attendees (including groom) to compute absorbed cost
+        let allAttendees: User[];
+        if (event.is_mandatory) {
+          allAttendees = await query<User>(`SELECT * FROM users WHERE trip_status = 'confirmed'`);
+        } else {
+          allAttendees = await query<User>(
+            `SELECT u.* FROM users u
+             JOIN rsvps r ON u.id = r.user_id AND r.event_id = $1
+             WHERE r.status = 'confirmed'`,
+            [req.params.id]
+          );
+        }
         perPersonCost = (totalCost * allAttendees.length) / payingAttendees.length;
         note = `$${totalCost.toFixed(0)}/person (covers groom)`;
       } else {
@@ -239,7 +270,7 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
       // even split
       perPersonCost = totalCost / payingAttendees.length;
       note = event.exclude_groom
-        ? `$${totalCost.toFixed(0)} ÷ ${payingAttendees.length} guests (covers groom)`
+        ? `$${totalCost.toFixed(0)} ÷ ${payingAttendees.length} (covers groom)`
         : `Even split`;
     }
 
@@ -255,15 +286,25 @@ router.post('/events/:id/costs/calculate', async (req: Request, res: Response, n
       );
     }
 
-    // If excluding groom, add groom's $0 entry
+    // If excluding groom, add groom's $0 entry (only if attending)
     if (event.exclude_groom) {
       const groom = await queryOne<User>(`SELECT * FROM users WHERE is_groom = true`);
       if (groom) {
-        await query(
-          `INSERT INTO event_costs (event_id, user_id, amount, notes)
-           VALUES ($1, $2, 0, $3)`,
-          [req.params.id, groom.id, 'Groom — covered by the crew']
-        );
+        let groomAttending = event.is_mandatory;
+        if (!groomAttending) {
+          const groomRsvp = await queryOne<{ status: string }>(
+            `SELECT status FROM rsvps WHERE user_id = $1 AND event_id = $2`,
+            [groom.id, req.params.id]
+          );
+          groomAttending = groomRsvp?.status === 'confirmed';
+        }
+        if (groomAttending) {
+          await query(
+            `INSERT INTO event_costs (event_id, user_id, amount, notes)
+             VALUES ($1, $2, 0, $3)`,
+            [req.params.id, groom.id, 'Groom — covered by the crew']
+          );
+        }
       }
     }
 
