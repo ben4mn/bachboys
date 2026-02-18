@@ -95,6 +95,17 @@ export async function setUserGroom(id: string, isGroom: boolean): Promise<User> 
   return response.data.user;
 }
 
+// Guest List
+export interface UnclaimedGuest {
+  id: string;
+  full_name: string;
+}
+
+export async function getUnclaimedGuests(): Promise<UnclaimedGuest[]> {
+  const response = await apiClient.get<{ unclaimed: UnclaimedGuest[] }>('/admin/guest-list/unclaimed');
+  return response.data.unclaimed;
+}
+
 // Payments
 export interface AdminPayment extends Payment {
   user_display_name: string;

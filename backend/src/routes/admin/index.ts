@@ -545,6 +545,21 @@ router.get('/notifications', async (_req: Request, res: Response, next: NextFunc
   }
 });
 
+// ===== GUEST LIST =====
+
+// GET /api/admin/guest-list/unclaimed - Get guests who haven't registered
+router.get('/guest-list/unclaimed', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const unclaimed = await query<{ id: string; full_name: string }>(
+      `SELECT id, full_name FROM guest_list WHERE claimed_by IS NULL ORDER BY full_name`
+    );
+
+    res.json({ unclaimed });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/admin/notifications/stats - Get push subscription stats
 router.get('/notifications/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {

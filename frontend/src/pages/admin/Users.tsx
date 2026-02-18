@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Plus, Trash2, Shield, ShieldOff, Crown, X } from 'lucide-react';
+import { Plus, Trash2, Shield, ShieldOff, Crown, X, UserX } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
@@ -11,6 +11,7 @@ import {
   deleteUser,
   setUserAdmin,
   setUserGroom,
+  getUnclaimedGuests,
   type CreateUserInput,
 } from '../../api/admin';
 import { getErrorMessage } from '../../api/client';
@@ -163,6 +164,11 @@ export default function AdminUsers() {
     queryFn: getUsers,
   });
 
+  const { data: unclaimedGuests } = useQuery({
+    queryKey: ['unclaimed-guests'],
+    queryFn: getUnclaimedGuests,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
@@ -249,7 +255,9 @@ export default function AdminUsers() {
       {users && (
         <div className="grid grid-cols-3 gap-4">
           <Card className="text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{users.length}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {users.length + (unclaimedGuests?.length || 0)}
+            </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Total Invited</div>
           </Card>
           <Card className="text-center">
@@ -260,7 +268,7 @@ export default function AdminUsers() {
           </Card>
           <Card className="text-center">
             <div className="text-2xl font-bold text-yellow-600">
-              {users.filter((u) => u.trip_status === 'maybe' || u.trip_status === 'invited').length}
+              {users.filter((u) => u.trip_status === 'maybe' || u.trip_status === 'invited').length + (unclaimedGuests?.length || 0)}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Pending</div>
           </Card>
@@ -348,6 +356,33 @@ export default function AdminUsers() {
           </Card>
         ))}
       </div>
+
+      {/* Unclaimed Guests */}
+      {unclaimedGuests && unclaimedGuests.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2 mt-2">
+            <UserX className="w-5 h-5 text-yellow-600" />
+            Not Yet Registered ({unclaimedGuests.length})
+          </h2>
+          <div className="space-y-3">
+            {unclaimedGuests.map((guest) => (
+              <Card key={guest.id}>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 font-bold text-lg">
+                    {guest.full_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{guest.full_name}</h3>
+                    <div className="mt-1">
+                      <Badge variant="default">Not Registered</Badge>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
 
       {showAddModal && <AddUserModal onClose={() => setShowAddModal(false)} />}
     </div>
