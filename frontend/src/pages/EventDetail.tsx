@@ -6,6 +6,7 @@ import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
+import { LinkedText } from '../components/shared/LinkedText';
 import { getEvent, updateRsvp } from '../api/events';
 import { useAuthStore } from '../store/authStore';
 import type { RsvpStatus } from '../types';
@@ -127,11 +128,15 @@ export default function EventDetail() {
           </div>
 
           {event.description && (
-            <p className="mt-4 text-gray-700 border-t pt-4">{event.description}</p>
+            <p className="mt-4 text-gray-700 border-t pt-4">
+              <LinkedText text={event.description} />
+            </p>
           )}
 
           {event.notes && (
-            <p className="mt-2 text-sm text-gray-500 italic">{event.notes}</p>
+            <p className="mt-2 text-sm text-gray-500 italic">
+              <LinkedText text={event.notes} />
+            </p>
           )}
         </Card>
 

@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Phone, AtSign, Crown, Shield } from 'lucide-react';
+import { Phone, AtSign, Crown, Shield, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
+import { LinkedText } from '../components/shared/LinkedText';
 import { getUsers } from '../api/users';
 import type { User, TripStatus } from '../types';
 
@@ -20,9 +23,17 @@ function getTripStatusBadge(status: TripStatus) {
   }
 }
 
-function AttendeeCard({ user }: { user: User }) {
+function AttendeeCard({
+  user,
+  isExpanded,
+  onToggle,
+}: {
+  user: User;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <Card>
+    <Card onClick={onToggle}>
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="relative">
@@ -51,6 +62,15 @@ function AttendeeCard({ user }: { user: User }) {
             {user.is_admin && (
               <Shield className="w-4 h-4 text-primary-600" />
             )}
+            {user.bio && (
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="ml-auto"
+              >
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </motion.div>
+            )}
           </div>
 
           <div className="mt-1">
@@ -58,7 +78,18 @@ function AttendeeCard({ user }: { user: User }) {
           </div>
 
           {user.bio && (
-            <p className="mt-2 text-sm text-gray-600 line-clamp-2">{user.bio}</p>
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={isExpanded ? 'expanded' : 'collapsed'}
+                initial={false}
+                animate={{ height: 'auto' }}
+                className="overflow-hidden"
+              >
+                <p className={`mt-2 text-sm text-gray-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
+                  <LinkedText text={user.bio} />
+                </p>
+              </motion.div>
+            </AnimatePresence>
           )}
 
           {/* Contact Info */}
@@ -66,6 +97,7 @@ function AttendeeCard({ user }: { user: User }) {
             {user.phone && (
               <a
                 href={`tel:${user.phone}`}
+                onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1.5 text-sm text-primary-600"
               >
                 <Phone className="w-4 h-4" />
@@ -77,6 +109,7 @@ function AttendeeCard({ user }: { user: User }) {
                 href={`https://venmo.com/${user.venmo_handle}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1.5 text-sm text-primary-600"
               >
                 <AtSign className="w-4 h-4" />
@@ -91,6 +124,7 @@ function AttendeeCard({ user }: { user: User }) {
 }
 
 export default function Attendees() {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['users'],
     queryFn: getUsers,
@@ -137,7 +171,12 @@ export default function Attendees() {
             {/* Attendee List */}
             <div className="space-y-3">
               {sortedUsers.map((user) => (
-                <AttendeeCard key={user.id} user={user} />
+                <AttendeeCard
+                  key={user.id}
+                  user={user}
+                  isExpanded={expandedId === user.id}
+                  onToggle={() => setExpandedId(expandedId === user.id ? null : user.id)}
+                />
               ))}
             </div>
           </>

@@ -7,6 +7,8 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
 declare let self: ServiceWorkerGlobalScope;
 
+const CACHE_VERSION = 'v2';
+
 // Clean up old caches
 cleanupOutdatedCaches();
 
@@ -17,7 +19,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/'),
   new NetworkFirst({
-    cacheName: 'api-cache',
+    cacheName: `api-cache-${CACHE_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -34,7 +36,7 @@ registerRoute(
 registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({
-    cacheName: 'images-cache',
+    cacheName: `images-cache-${CACHE_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -51,7 +53,7 @@ registerRoute(
 registerRoute(
   ({ request }) => request.destination === 'font',
   new CacheFirst({
-    cacheName: 'fonts-cache',
+    cacheName: `fonts-cache-${CACHE_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -70,7 +72,7 @@ registerRoute(
     request.destination === 'script' ||
     request.destination === 'style',
   new StaleWhileRevalidate({
-    cacheName: 'static-resources',
+    cacheName: `static-resources-${CACHE_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -203,10 +205,26 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Log service worker activation
+// Purge old versioned caches on activate, then claim clients
 self.addEventListener('activate', (event) => {
   console.log('BachBoys Service Worker activated');
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys
+          .filter((key) => {
+            // Keep workbox precache (has its own versioning)
+            if (key.startsWith('workbox-precache')) return false;
+            // Delete any runtime cache that doesn't end with current version
+            return !key.endsWith(`-${CACHE_VERSION}`);
+          })
+          .map((key) => {
+            console.log('Deleting old cache:', key);
+            return caches.delete(key);
+          })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('install', () => {
