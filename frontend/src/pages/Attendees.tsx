@@ -33,7 +33,7 @@ function AttendeeCard({
   onToggle: () => void;
 }) {
   return (
-    <Card onClick={onToggle}>
+    <Card onClick={user.bio ? onToggle : undefined}>
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="relative">
