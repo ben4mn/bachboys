@@ -37,8 +37,8 @@ export default function ResetPassword() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-slate-50">
-        <p className="text-gray-600">Invalid or missing reset token.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-slate-50 dark:bg-gray-900">
+        <p className="text-gray-600 dark:text-gray-400">Invalid or missing reset token.</p>
         <Link to="/forgot-password" className="mt-4 text-sm font-medium text-primary-600">
           Request a new link
         </Link>
@@ -60,33 +60,33 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-12 bg-slate-50">
+    <div className="min-h-screen flex flex-col justify-center px-6 py-12 bg-slate-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         {success ? (
           <div className="text-center">
             <div className="mx-auto w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-7 h-7 text-green-600" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Password reset</h1>
-            <p className="mt-2 text-sm text-gray-600">Your password has been updated successfully.</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Password reset</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Your password has been updated successfully.</p>
             <Link to="/login" className="btn-primary inline-block mt-6 px-6 h-10 leading-10 text-sm">
               Sign in
             </Link>
           </div>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-gray-900">Set new password</h1>
-            <p className="mt-2 text-sm text-gray-600">Choose a new password for your account.</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Set new password</h1>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Choose a new password for your account.</p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/30 rounded-lg text-red-700 dark:text-red-400 text-sm">
                   {error}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                 <input
                   {...register('password')}
                   type="password"
@@ -100,7 +100,7 @@ export default function ResetPassword() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                 <input
                   {...register('confirmPassword')}
                   type="password"

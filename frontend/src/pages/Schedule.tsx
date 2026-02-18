@@ -5,6 +5,7 @@ import { MapPin, Clock, Users, ChevronRight } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
+import { AvatarStack } from '../components/shared/AvatarStack';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { getEvents } from '../api/events';
 import type { Event } from '../types';
@@ -41,21 +42,21 @@ function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
     <Card onClick={onClick} className="flex gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-gray-900 truncate">{event.title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white truncate">{event.title}</h3>
           {getRsvpBadge()}
         </div>
 
         <div className="mt-2 space-y-1">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <Clock className="w-4 h-4 flex-shrink-0" />
             <span>{formatEventTime(event.start_time)}</span>
             {event.end_time && (
-              <span className="text-gray-400">- {formatEventTime(event.end_time)}</span>
+              <span className="text-gray-400 dark:text-gray-500">- {formatEventTime(event.end_time)}</span>
             )}
           </div>
 
           {event.location && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{event.location}</span>
             </div>
@@ -66,10 +67,19 @@ function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
               ${Number(event.total_cost).toFixed(0)} total
             </div>
           )}
+
+          {event.attendees && event.attendees.length > 0 && (
+            <div className="mt-1">
+              <AvatarStack
+                attendees={event.attendees}
+                totalCount={event.attendee_count || event.attendees.length}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 self-center" />
+      <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 self-center" />
     </Card>
   );
 }
@@ -101,14 +111,14 @@ export default function Schedule() {
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 rounded-lg text-red-700 text-center">
+          <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-400 text-center">
             Failed to load schedule
           </div>
         )}
 
         {events?.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <Users className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
             <p>No events scheduled yet</p>
             <p className="text-sm mt-1">Check back soon!</p>
           </div>
@@ -116,7 +126,7 @@ export default function Schedule() {
 
         {groupedEvents && Object.entries(groupedEvents).map(([dateKey, dayEvents]) => (
           <div key={dateKey} className="mb-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
               {formatEventDate(dayEvents[0].start_time)}
             </h2>
             <div className="space-y-3">

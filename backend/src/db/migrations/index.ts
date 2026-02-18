@@ -246,6 +246,27 @@ const migrations = [
     name: '011_add_exclude_groom',
     up: `ALTER TABLE events ADD COLUMN IF NOT EXISTS exclude_groom BOOLEAN DEFAULT true;`,
   },
+  // 012: Create photos table for shared gallery
+  {
+    name: '012_create_photos',
+    up: `
+      CREATE TABLE IF NOT EXISTS photos (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        caption TEXT,
+        file_path TEXT NOT NULL,
+        thumb_path TEXT NOT NULL,
+        original_filename TEXT,
+        file_size INTEGER,
+        width INTEGER,
+        height INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_photos_user_id ON photos(user_id);
+      CREATE INDEX IF NOT EXISTS idx_photos_created_at ON photos(created_at DESC);
+    `,
+  },
 ];
 
 // Track migrations

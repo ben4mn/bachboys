@@ -22,10 +22,49 @@ router.get('/', authenticate, async (req: Request, res: Response, next: NextFunc
 
     const rsvpMap = new Map(rsvps.map(r => [r.event_id, r.status]));
 
-    const eventsWithRsvp = events.map(event => ({
-      ...event,
-      user_rsvp: rsvpMap.get(event.id) || 'pending',
-    }));
+    // Get confirmed attendees with photos for all events
+    const confirmedAttendees = await query<{ event_id: string; id: string; display_name: string; photo_url: string | null }>(
+      `SELECT r.event_id, u.id, u.display_name, u.photo_url
+       FROM rsvps r JOIN users u ON r.user_id = u.id
+       WHERE r.status = 'confirmed'
+       ORDER BY u.display_name`
+    );
+
+    // Get confirmed-trip users for mandatory events
+    const confirmedTripUsers = await query<{ id: string; display_name: string; photo_url: string | null }>(
+      `SELECT id, display_name, photo_url FROM users WHERE trip_status = 'confirmed' ORDER BY display_name`
+    );
+
+    // Build attendee map: event_id -> { attendees (first 5), count }
+    const attendeeMap = new Map<string, { attendees: { id: string; display_name: string; photo_url: string | null }[]; count: number }>();
+    for (const a of confirmedAttendees) {
+      if (!attendeeMap.has(a.event_id)) {
+        attendeeMap.set(a.event_id, { attendees: [], count: 0 });
+      }
+      const entry = attendeeMap.get(a.event_id)!;
+      entry.count++;
+      if (entry.attendees.length < 5) {
+        entry.attendees.push({ id: a.id, display_name: a.display_name, photo_url: a.photo_url });
+      }
+    }
+
+    const eventsWithRsvp = events.map(event => {
+      let eventAttendees;
+      if (event.is_mandatory) {
+        eventAttendees = {
+          attendees: confirmedTripUsers.slice(0, 5),
+          count: confirmedTripUsers.length,
+        };
+      } else {
+        eventAttendees = attendeeMap.get(event.id) || { attendees: [], count: 0 };
+      }
+      return {
+        ...event,
+        user_rsvp: rsvpMap.get(event.id) || 'pending',
+        attendees: eventAttendees.attendees,
+        attendee_count: eventAttendees.count,
+      };
+    });
 
     res.json({ events: eventsWithRsvp });
   } catch (error) {

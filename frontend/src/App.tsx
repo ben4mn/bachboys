@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 
 // Pages
 import Landing from './pages/Landing';
@@ -8,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Gallery from './pages/Gallery';
 import Schedule from './pages/Schedule';
 import EventDetail from './pages/EventDetail';
 import Payments from './pages/Payments';
@@ -33,7 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center dark:bg-gray-900">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -58,7 +60,7 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-900 pb-20">
       {children}
       <BottomNav />
       <InstallPrompt />
@@ -67,6 +69,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  // Initialize theme on app load
+  useThemeStore();
   const { checkAuth, isAuthenticated, isLoading, _hasHydrated } = useAuthStore();
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function App() {
 
   if (!_hasHydrated || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-900">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -132,6 +136,16 @@ export default function App() {
           <ProtectedRoute>
             <AppLayout>
               <EventDetail />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gallery"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Gallery />
             </AppLayout>
           </ProtectedRoute>
         }

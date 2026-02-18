@@ -16,6 +16,7 @@ import eventRoutes from './routes/events.js';
 import paymentRoutes from './routes/payments.js';
 import notificationRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin/index.js';
+import galleryRoutes from './routes/gallery.js';
 
 const app = express();
 
@@ -74,6 +75,10 @@ app.use('/api/events', eventRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/gallery', galleryRoutes);
+
+// Serve uploaded gallery files
+app.use('/uploads', express.static('/app/uploads'));
 
 // Error handling
 app.use(notFoundHandler);

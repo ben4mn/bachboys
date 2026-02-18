@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Phone, AtSign, Crown, Shield, ChevronDown } from 'lucide-react';
+import { Phone, AtSign, Crown, Shield, ChevronDown, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -21,6 +21,65 @@ function getTripStatusBadge(status: TripStatus) {
     default:
       return <Badge variant="default">Invited</Badge>;
   }
+}
+
+function saveAsContact(user: User) {
+  const lines: string[] = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${user.display_name}`,
+  ];
+
+  // Split display name into first/last for N field
+  const parts = user.display_name.trim().split(/\s+/);
+  const firstName = parts[0] || '';
+  const lastName = parts.slice(1).join(' ') || '';
+  lines.push(`N:${lastName};${firstName};;;`);
+
+  if (user.phone) {
+    lines.push(`TEL;TYPE=CELL:${user.phone}`);
+  }
+
+  if (user.venmo_handle) {
+    const handle = user.venmo_handle.replace(/^@/, '');
+    lines.push(`URL:https://venmo.com/${handle}`);
+    const notesParts: string[] = [`Venmo: @${handle}`];
+    if (user.bio) notesParts.push(user.bio);
+    lines.push(`NOTE:${notesParts.join('\\n')}`);
+  } else if (user.bio) {
+    lines.push(`NOTE:${user.bio}`);
+  }
+
+  // Include photo if it's a base64 data URL
+  if (user.photo_url?.startsWith('data:image/')) {
+    const match = user.photo_url.match(/^data:image\/(\w+);base64,(.+)$/);
+    if (match) {
+      const type = match[1].toUpperCase();
+      const base64 = match[2];
+      // vCard 3.0 PHOTO with inline base64 — fold long lines at 75 chars
+      const photoLine = `PHOTO;ENCODING=b;TYPE=${type}:${base64}`;
+      // Fold per RFC 2425: first line normal, continuation lines start with space
+      const folded: string[] = [];
+      for (let i = 0; i < photoLine.length; i += 75) {
+        folded.push((i === 0 ? '' : ' ') + photoLine.slice(i, i + 75));
+      }
+      lines.push(folded.join('\r\n'));
+    }
+  }
+
+  lines.push('END:VCARD');
+
+  const vcf = lines.join('\r\n');
+  const blob = new Blob([vcf], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${user.display_name.replace(/\s+/g, '_')}.vcf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function AttendeeCard({
@@ -70,7 +129,7 @@ function AttendeeCard({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900 truncate">{user.display_name}</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white truncate">{user.display_name}</h3>
             {user.is_admin && (
               <Shield className="w-4 h-4 text-primary-600" />
             )}
@@ -92,7 +151,7 @@ function AttendeeCard({
           {user.bio && (
             <p
               ref={bioRef}
-              className={`mt-2 text-sm text-gray-600 ${isExpanded ? '' : 'line-clamp-2'}`}
+              className={`mt-2 text-sm text-gray-600 dark:text-gray-400 ${isExpanded ? '' : 'line-clamp-2'}`}
             >
               <LinkedText text={user.bio} />
             </p>
@@ -104,7 +163,7 @@ function AttendeeCard({
               <a
                 href={`tel:${user.phone}`}
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 text-sm text-primary-600"
+                className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400"
               >
                 <Phone className="w-4 h-4" />
                 {user.phone}
@@ -116,12 +175,19 @@ function AttendeeCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1.5 text-sm text-primary-600"
+                className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400"
               >
                 <AtSign className="w-4 h-4" />
                 {user.venmo_handle.replace(/^@/, '')}
               </a>
             )}
+            <button
+              onClick={(e) => { e.stopPropagation(); saveAsContact(user); }}
+              className="flex items-center gap-1.5 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+            >
+              <UserPlus className="w-4 h-4" />
+              Save Contact
+            </button>
           </div>
         </div>
       </div>
@@ -159,7 +225,7 @@ export default function Attendees() {
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 rounded-lg text-red-700 text-center">
+          <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-lg text-red-700 dark:text-red-400 text-center">
             Failed to load attendees
           </div>
         )}
@@ -168,8 +234,8 @@ export default function Attendees() {
           <>
             {/* Stats */}
             <div className="mb-4 text-center">
-              <span className="text-2xl font-bold text-primary-600">{confirmedCount}</span>
-              <span className="text-gray-600 ml-2">
+              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">{confirmedCount}</span>
+              <span className="text-gray-600 dark:text-gray-400 ml-2">
                 {confirmedCount === 1 ? 'person' : 'people'} confirmed
               </span>
             </div>

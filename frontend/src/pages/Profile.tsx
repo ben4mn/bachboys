@@ -2,13 +2,14 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { LogOut, Check, Edit2, Settings, Camera } from 'lucide-react';
+import { LogOut, Check, Edit2, Settings, Camera, Sun, Moon, Monitor } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { NotificationSettings } from '../components/shared/NotificationSettings';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
 import { updateProfile, updateTripStatus } from '../api/users';
 import { getErrorMessage } from '../api/client';
 import type { TripStatus } from '../types';
@@ -54,8 +55,15 @@ function resizeImage(file: File, maxSize: number): Promise<string> {
   });
 }
 
+const themeOptions = [
+  { value: 'light' as const, label: 'Light', icon: Sun },
+  { value: 'dark' as const, label: 'Dark', icon: Moon },
+  { value: 'system' as const, label: 'System', icon: Monitor },
+];
+
 export default function Profile() {
   const { user, logout, setUser } = useAuthStore();
+  const { theme, setTheme } = useThemeStore();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +133,7 @@ export default function Profile() {
         rightElement={
           <button
             onClick={logout}
-            className="p-2 text-gray-600 hover:text-gray-900"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             title="Sign out"
           >
             <LogOut className="w-5 h-5" />
@@ -161,8 +169,8 @@ export default function Profile() {
               onChange={handlePhotoChange}
             />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{user.display_name}</h2>
-              <p className="text-gray-600">@{user.username}</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{user.display_name}</h2>
+              <p className="text-gray-600 dark:text-gray-400">@{user.username}</p>
               {user.is_groom && <Badge variant="warning" className="mt-1">The Groom</Badge>}
               {user.is_admin && <Badge variant="info" className="mt-1">Organizer</Badge>}
             </div>
@@ -189,12 +197,33 @@ export default function Profile() {
           </Link>
         )}
 
+        {/* Theme */}
+        <Card>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Theme</h3>
+          <div className="flex gap-2">
+            {themeOptions.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-lg border-2 transition-colors ${
+                  theme === value
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
         {/* Notifications */}
         <NotificationSettings />
 
         {/* Trip Status */}
         <Card>
-          <h3 className="font-semibold text-gray-900 mb-3">Trip Status</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Trip Status</h3>
           <div className="space-y-2">
             {tripStatusOptions.map((option) => (
               <button
@@ -203,13 +232,13 @@ export default function Profile() {
                 disabled={statusMutation.isPending}
                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-colors ${
                   user.trip_status === option.value
-                    ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                 }`}
               >
                 <div className="text-left">
-                  <div className="font-medium">{option.label}</div>
-                  <div className="text-sm text-gray-500">{option.description}</div>
+                  <div className="font-medium dark:text-white">{option.label}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{option.description}</div>
                 </div>
                 {user.trip_status === option.value && (
                   <Check className="w-5 h-5 text-primary-600" />
@@ -222,7 +251,7 @@ export default function Profile() {
         {/* Profile Details */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Profile Details</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Profile Details</h3>
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
@@ -235,7 +264,7 @@ export default function Profile() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/30 rounded-lg text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -243,14 +272,14 @@ export default function Profile() {
           {isEditing ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Display Name
                 </label>
                 <input {...register('display_name')} className="input" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Bio
                 </label>
                 <textarea
@@ -262,7 +291,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Phone
                 </label>
                 <input
@@ -274,7 +303,7 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Venmo Handle
                 </label>
                 <input
@@ -305,17 +334,17 @@ export default function Profile() {
             <div className="space-y-3">
               {user.bio && (
                 <div>
-                  <div className="text-sm text-gray-500">Bio</div>
-                  <div className="text-gray-900">{user.bio}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Bio</div>
+                  <div className="text-gray-900 dark:text-white">{user.bio}</div>
                 </div>
               )}
               <div>
-                <div className="text-sm text-gray-500">Phone</div>
-                <div className="text-gray-900">{user.phone || 'Not set'}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Phone</div>
+                <div className="text-gray-900 dark:text-white">{user.phone || 'Not set'}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Venmo</div>
-                <div className="text-gray-900">{user.venmo_handle || 'Not set'}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Venmo</div>
+                <div className="text-gray-900 dark:text-white">{user.venmo_handle || 'Not set'}</div>
               </div>
             </div>
           )}

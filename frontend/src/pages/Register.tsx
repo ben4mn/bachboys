@@ -115,7 +115,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-12 bg-slate-50">
+    <div className="min-h-screen flex flex-col justify-center px-6 py-12 bg-slate-50 dark:bg-gray-900">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         {/* Header */}
         <div className="flex justify-center">
@@ -123,7 +123,7 @@ export default function Register() {
             <span className="text-3xl font-bold text-white">B</span>
           </div>
         </div>
-        <h1 className="mt-6 text-center text-2xl font-bold text-gray-900">Join BachBoys</h1>
+        <h1 className="mt-6 text-center text-2xl font-bold text-gray-900 dark:text-white">Join BachBoys</h1>
 
         {/* Step indicator */}
         <div className="mt-4 flex justify-center gap-2">
@@ -131,7 +131,7 @@ export default function Register() {
             <div
               key={s}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                s === step ? 'w-8 bg-primary-600' : s < step ? 'w-8 bg-primary-300' : 'w-8 bg-gray-200'
+                s === step ? 'w-8 bg-primary-600' : s < step ? 'w-8 bg-primary-300' : 'w-8 bg-gray-200 dark:bg-gray-700'
               }`}
             />
           ))}
@@ -150,17 +150,17 @@ export default function Register() {
                 exit="exit"
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
               >
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   First, let's verify you're on the guest list.
                 </p>
                 <form onSubmit={nameForm.handleSubmit(handleNameSubmit)} className="space-y-4">
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/30 rounded-lg text-red-700 dark:text-red-400 text-sm">
                       {error}
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Your Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Full Name</label>
                     <input
                       {...nameForm.register('real_name')}
                       type="text"
@@ -189,7 +189,7 @@ export default function Register() {
                 exit="exit"
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
               >
-                <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
+                <button onClick={goBack} className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 mb-4">
                   <ArrowLeft className="w-4 h-4" />
                   Back
                 </button>
@@ -201,13 +201,13 @@ export default function Register() {
 
                 <form onSubmit={accountForm.handleSubmit(handleAccountSubmit)} className="space-y-4">
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/30 rounded-lg text-red-700 dark:text-red-400 text-sm">
                       {error}
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
                     <input {...accountForm.register('display_name')} type="text" className="input" />
                     {accountForm.formState.errors.display_name && (
                       <p className="mt-1 text-sm text-red-600">{accountForm.formState.errors.display_name.message}</p>
@@ -215,7 +215,7 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
                     <input
                       {...accountForm.register('username')}
                       type="text"
@@ -229,7 +229,7 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                     <input
                       {...accountForm.register('email')}
                       type="email"
@@ -243,7 +243,7 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
                     <input
                       {...accountForm.register('password')}
                       type="password"
@@ -257,7 +257,7 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                     <input
                       {...accountForm.register('confirmPassword')}
                       type="password"
@@ -291,8 +291,8 @@ export default function Register() {
                 <div className="mx-auto w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle className="w-7 h-7 text-green-600" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900">You're in!</h2>
-                <p className="mt-2 text-sm text-gray-600">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">You're in!</h2>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   Welcome to the crew, {matchedName}. Redirecting to the schedule...
                 </p>
               </motion.div>
@@ -301,7 +301,7 @@ export default function Register() {
         </div>
 
         {step < 3 && (
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
             <Link to="/login" className="text-primary-600 font-medium hover:text-primary-500">
               Sign in

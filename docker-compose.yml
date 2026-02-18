@@ -50,6 +50,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/src:/app/src
+      - gallery_uploads:/app/uploads
     command: npm run dev
 
   frontend:
@@ -74,3 +75,4 @@ services:
 
 volumes:
   postgres_data:
+  gallery_uploads:

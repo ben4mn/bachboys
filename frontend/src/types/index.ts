@@ -29,11 +29,19 @@ export interface Event {
   image_url: string | null;
   notes: string | null;
   user_rsvp?: RsvpStatus;
+  attendees?: EventAttendeePreview[];
+  attendee_count?: number;
 }
 
 export type SplitType = 'even' | 'custom' | 'fixed';
 
 export type RsvpStatus = 'pending' | 'confirmed' | 'declined' | 'maybe';
+
+export interface EventAttendeePreview {
+  id: string;
+  display_name: string;
+  photo_url: string | null;
+}
 
 export interface Payment {
   id: string;

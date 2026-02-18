@@ -16,8 +16,8 @@ export function NotificationSettings() {
 
   if (!isSupported) {
     return (
-      <Card className="bg-gray-50">
-        <div className="flex items-center gap-3 text-gray-500">
+      <Card className="bg-gray-50 dark:bg-gray-800">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
           <BellOff className="w-5 h-5" />
           <div>
             <div className="font-medium">Notifications Not Supported</div>
@@ -58,8 +58,8 @@ export function NotificationSettings() {
             </div>
           )}
           <div>
-            <div className="font-medium text-gray-900">Push Notifications</div>
-            <div className="text-sm text-gray-500">
+            <div className="font-medium text-gray-900 dark:text-white">Push Notifications</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {isSubscribed
                 ? 'You\'ll receive alerts for schedule changes'
                 : 'Get notified about important updates'}
@@ -72,7 +72,7 @@ export function NotificationSettings() {
           disabled={isLoading}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             isSubscribed
-              ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
               : 'bg-primary-600 text-white hover:bg-primary-700'
           }`}
         >
