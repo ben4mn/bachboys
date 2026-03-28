@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { Check, X, Clock, DollarSign, TrendingUp, TrendingDown, Plus } from 'lucide-react';
+import { Check, X, Clock, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
