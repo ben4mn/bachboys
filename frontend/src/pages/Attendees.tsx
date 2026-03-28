@@ -177,24 +177,24 @@ function AttendeeCard({
           {hasFlights && isExpanded && (
             <div className="mt-3 pt-3 border-t dark:border-gray-700 space-y-2">
               {user.arrival_flight && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
                   <PlaneLanding className="w-4 h-4 text-primary-600 flex-shrink-0" />
                   <span className="font-medium dark:text-white">{user.arrival_flight}</span>
                   <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.arrival_flight)}</span>
                   {user.arrival_datetime && (
-                    <span className="text-gray-600 dark:text-gray-400 ml-auto text-xs whitespace-nowrap">
+                    <span className="text-gray-600 dark:text-gray-400 w-full text-xs pl-6">
                       {format(parseISO(user.arrival_datetime), 'EEE, MMM d @ h:mm a')}
                     </span>
                   )}
                 </div>
               )}
               {user.departure_flight && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
                   <PlaneTakeoff className="w-4 h-4 text-primary-600 flex-shrink-0" />
                   <span className="font-medium dark:text-white">{user.departure_flight}</span>
                   <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.departure_flight)}</span>
                   {user.departure_datetime && (
-                    <span className="text-gray-600 dark:text-gray-400 ml-auto text-xs whitespace-nowrap">
+                    <span className="text-gray-600 dark:text-gray-400 w-full text-xs pl-6">
                       {format(parseISO(user.departure_datetime), 'EEE, MMM d @ h:mm a')}
                     </span>
                   )}

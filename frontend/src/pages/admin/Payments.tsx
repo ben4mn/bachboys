@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { Check, X, Clock, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { Check, X, Clock, DollarSign, TrendingUp, TrendingDown, Plus } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
@@ -9,9 +9,12 @@ import {
   getAllPayments,
   getAllBalances,
   updatePaymentStatus,
+  createAdminPayment,
   type AdminPayment,
   type UserBalance,
+  type CreateAdminPaymentInput,
 } from '../../api/admin';
+import { getErrorMessage } from '../../api/client';
 import type { PaymentStatus } from '../../types';
 
 function formatCurrency(amount: number): string {
@@ -96,12 +99,134 @@ function PaymentRow({
   );
 }
 
-function BalanceCard({ balance }: { balance: UserBalance }) {
+function LogPaymentModal({ user, onClose }: { user: UserBalance; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const [amount, setAmount] = useState(user.balance_remaining > 0 ? user.balance_remaining.toString() : '');
+  const [paymentMethod, setPaymentMethod] = useState<CreateAdminPaymentInput['payment_method']>('venmo');
+  const [notes, setNotes] = useState('');
+
+  const mutation = useMutation({
+    mutationFn: createAdminPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payments'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'balances'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+      onClose();
+    },
+    onError: (err) => setError(getErrorMessage(err)),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseFloat(amount);
+    if (!parsed || parsed <= 0) {
+      setError('Enter a valid amount');
+      return;
+    }
+    setError(null);
+    mutation.mutate({
+      user_id: user.user_id,
+      amount: parsed,
+      payment_method: paymentMethod,
+      notes: notes || undefined,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+          <h2 className="text-lg font-semibold dark:text-white">Log Payment for {user.display_name}</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Amount *
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="input pl-7"
+                placeholder="0.00"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Payment Method *
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value as CreateAdminPaymentInput['payment_method'])}
+              className="input"
+            >
+              <option value="venmo">Venmo</option>
+              <option value="cash">Cash</option>
+              <option value="zelle">Zelle</option>
+              <option value="paypal">PayPal</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="input"
+              rows={2}
+              placeholder="Optional notes"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="submit"
+              disabled={mutation.isPending}
+              className="btn-primary flex-1"
+            >
+              {mutation.isPending ? <LoadingSpinner size="sm" /> : 'Log Payment'}
+            </button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function BalanceCard({ balance, onClick }: { balance: UserBalance; onClick: () => void }) {
   const isOwed = balance.balance_remaining > 0;
   const isPaid = balance.balance_remaining <= 0 && balance.total_owed > 0;
 
   return (
-    <div className="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg">
+    <div
+      onClick={onClick}
+      className="flex items-center justify-between p-3 border dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+    >
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-medium">
           {balance.display_name.charAt(0).toUpperCase()}
@@ -133,6 +258,7 @@ function BalanceCard({ balance }: { balance: UserBalance }) {
 export default function AdminPayments() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<'payments' | 'balances'>('payments');
+  const [logPaymentUser, setLogPaymentUser] = useState<UserBalance | null>(null);
 
   const { data: payments, isLoading: paymentsLoading } = useQuery({
     queryKey: ['admin', 'payments'],
@@ -337,7 +463,7 @@ export default function AdminPayments() {
           <h2 className="font-semibold text-gray-900 dark:text-white mb-4">User Balances</h2>
           <div className="space-y-2">
             {balances?.map((balance) => (
-              <BalanceCard key={balance.user_id} balance={balance} />
+              <BalanceCard key={balance.user_id} balance={balance} onClick={() => setLogPaymentUser(balance)} />
             ))}
           </div>
 
@@ -348,6 +474,13 @@ export default function AdminPayments() {
             </div>
           )}
         </Card>
+      )}
+
+      {logPaymentUser && (
+        <LogPaymentModal
+          user={logPaymentUser}
+          onClose={() => setLogPaymentUser(null)}
+        />
       )}
     </div>
   );

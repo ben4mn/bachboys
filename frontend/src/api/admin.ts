@@ -134,3 +134,16 @@ export async function updatePaymentStatus(id: string, status: PaymentStatus): Pr
   const response = await apiClient.put<{ payment: Payment }>(`/admin/payments/${id}`, { status });
   return response.data.payment;
 }
+
+export interface CreateAdminPaymentInput {
+  user_id: string;
+  amount: number;
+  payment_method: 'venmo' | 'cash' | 'zelle' | 'paypal' | 'credit_card' | 'other';
+  notes?: string;
+  event_id?: string;
+}
+
+export async function createAdminPayment(data: CreateAdminPaymentInput): Promise<Payment> {
+  const response = await apiClient.post<{ payment: Payment }>('/admin/payments', data);
+  return response.data.payment;
+}

@@ -71,6 +71,10 @@ export const paymentSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const adminPaymentSchema = paymentSchema.extend({
+  user_id: z.string().uuid(),
+});
+
 export const costSplitSchema = z.object({
   costs: z.array(z.object({
     user_id: z.string().uuid(),

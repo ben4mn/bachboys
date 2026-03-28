@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authenticate, requireAdmin } from '../../middleware/auth.js';
 import { query, queryOne } from '../../db/pool.js';
-import { validate, eventSchema, costSplitSchema } from '../../utils/validators.js';
+import { validate, eventSchema, costSplitSchema, adminPaymentSchema } from '../../utils/validators.js';
 import { hashPassword } from '../../utils/crypto.js';
 import { AppError } from '../../middleware/errorHandler.js';
 import { pushService } from '../../services/PushService.js';
@@ -509,6 +509,32 @@ router.put('/payments/:id', async (req: Request, res: Response, next: NextFuncti
     }
 
     res.json({ payment });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/payments - Log payment on behalf of a user (auto-confirmed)
+router.post('/payments', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = validate(adminPaymentSchema, req.body);
+
+    const [payment] = await query<Payment>(
+      `INSERT INTO payments (user_id, event_id, amount, payment_method, payment_reference, notes, status, confirmed_by, confirmed_at, paid_at)
+       VALUES ($1, $2, $3, $4, $5, $6, 'confirmed', $7, NOW(), NOW())
+       RETURNING *`,
+      [
+        data.user_id,
+        data.event_id || null,
+        data.amount,
+        data.payment_method,
+        data.payment_reference || null,
+        data.notes || null,
+        req.user!.userId,
+      ]
+    );
+
+    res.status(201).json({ payment });
   } catch (error) {
     next(error);
   }
