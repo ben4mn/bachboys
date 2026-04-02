@@ -75,6 +75,7 @@ export interface CostBreakdown {
   event_title: string;
   event_date: string;
   amount: number;
+  amount_paid: number;
   notes: string | null;
 }
 

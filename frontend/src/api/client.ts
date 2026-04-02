@@ -3,6 +3,24 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 // Use relative URL in production (same origin), absolute in development
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+function forceLogout() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  // Clear persisted auth store so the app knows we're logged out
+  const stored = localStorage.getItem('auth-storage');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      parsed.state.user = null;
+      parsed.state.isAuthenticated = false;
+      localStorage.setItem('auth-storage', JSON.stringify(parsed));
+    } catch { /* ignore */ }
+  }
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login';
+  }
+}
+
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {
@@ -44,10 +62,12 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } catch {
           // Refresh failed, clear tokens and redirect to login
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          forceLogout();
+          return new Promise(() => {}); // Suppress error while redirecting
         }
+      } else {
+        forceLogout();
+        return new Promise(() => {}); // Suppress error while redirecting
       }
     }
 

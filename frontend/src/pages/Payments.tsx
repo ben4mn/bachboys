@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { DollarSign, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
 import { Badge } from '../components/shared/Badge';
@@ -113,17 +113,43 @@ export default function Payments() {
               <Card>
                 <h2 className="font-semibold text-gray-900 dark:text-white mb-3">Cost Breakdown</h2>
                 <div className="space-y-3">
-                  {breakdown.map((item) => (
-                    <div key={item.event_id} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">{item.event_title}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {item.notes || format(parseISO(item.event_date), 'MMM d')}
+                  {breakdown.map((item) => {
+                    const isPaid = item.amount_paid >= item.amount;
+                    const isPartial = item.amount_paid > 0 && !isPaid;
+                    return (
+                      <div key={item.event_id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isPaid && (
+                            <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          )}
+                          <div>
+                            <div className={`font-medium ${isPaid ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-white'}`}>
+                              {item.event_title}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {item.notes || format(parseISO(item.event_date), 'MMM d')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {isPaid ? (
+                            <Badge variant="success">Paid</Badge>
+                          ) : isPartial ? (
+                            <div>
+                              <div className="font-semibold text-gray-900 dark:text-white">
+                                {formatCurrency(item.amount - item.amount_paid)}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                of {formatCurrency(item.amount)}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="font-semibold">{formatCurrency(item.amount)}</div>
+                          )}
                         </div>
                       </div>
-                      <div className="font-semibold">{formatCurrency(item.amount)}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </Card>
             )}
