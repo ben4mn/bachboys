@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BachBoys — Bachelor Party Planning App</title>
+  <meta name="description" content="BachBoys is the ultimate bachelor party planning PWA. Coordinate schedules, split costs, share photos, and keep the crew aligned — all from your phone.">
+  <meta name="keywords" content="bachelor party app, bachelor party planner, bachelor party organizer, group trip planner, event cost splitter, bachelor weekend app, stag party planner, PWA, progressive web app, trip coordination, group payments, RSVP tracker, bachelor party schedule">
+  <meta name="author" content="BachBoys">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#4A7BF7">
+  <link rel="canonical" href="https://ben4mn.github.io/bachboys/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ben4mn.github.io/bachboys/">
+  <meta property="og:title" content="BachBoys — The Bachelor Party App">
+  <meta property="og:description" content="Coordinate schedules, split costs, share photos, and keep the whole crew aligned. One app for the entire bachelor party.">
+  <meta property="og:image" content="https://ben4mn.github.io/bachboys/screenshots/schedule-dark.png">
+  <meta property="og:image:width" content="390">
+  <meta property="og:image:height" content="844">
+  <meta property="og:site_name" content="BachBoys">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BachBoys — The Bachelor Party App">
+  <meta name="twitter:description" content="Coordinate schedules, split costs, share photos, and keep the whole crew aligned.">
+  <meta name="twitter:image" content="https://ben4mn.github.io/bachboys/screenshots/schedule-dark.png">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "BachBoys",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Web",
+    "description": "A mobile-first PWA for coordinating bachelor parties. Manage schedules, split costs, share photos, track RSVPs, and send push notifications.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Event scheduling with RSVP tracking",
+      "Cost splitting and payment tracking",
+      "Photo gallery sharing",
+      "Push notifications",
+      "Dark and light theme",
+      "Installable PWA"
+    ],
+    "screenshot": "https://ben4mn.github.io/bachboys/screenshots/schedule-dark.png",
+    "softwareVersion": "1.0",
+    "author": {
+      "@type": "Organization",
+      "name": "BachBoys"
+    }
+  }
+  </script>
+
+  <link rel="icon" type="image/png" href="../frontend/public/pwa-512x512.png">
+  <link rel="apple-touch-icon" href="../frontend/public/apple-touch-icon.png">
+
+  <style>
+    @font-face {
+      font-family: 'Clash';
+      src: local('Clash Display'), local('ClashDisplay-Variable');
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    :root {
+      --blue: #4A7BF7;
+      --blue-light: #6B96FF;
+      --blue-glow: rgba(74, 123, 247, 0.25);
+      --midnight: #08090D;
+      --surface: #0F1117;
+      --surface-2: #161923;
+      --border: rgba(255,255,255,0.06);
+      --text: #E8EAF0;
+      --text-dim: #7A7F94;
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Clash', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--midnight);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── Grain overlay ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    /* ── Constellation background ── */
+    .constellation {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .constellation .dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--blue);
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle 4s ease-in-out infinite;
+    }
+
+    .constellation .dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      background: var(--blue);
+      border-radius: 50%;
+      opacity: 0.15;
+      filter: blur(3px);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      padding: 100px 0;
+      position: relative;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      transition: background 0.3s, backdrop-filter 0.3s;
+    }
+
+    nav.scrolled {
+      background: rgba(8, 9, 13, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+
+    .nav-brand span {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--blue);
+      color: white !important;
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px var(--blue-glow);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--blue-glow) 0%, transparent 70%);
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      animation: pulse-glow 6s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.7; transform: translateX(-50%) scale(1.1); }
+    }
+
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 6px 16px 6px 8px;
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 28px;
+      animation: fade-up 0.8s ease-out both;
+    }
+
+    .hero-badge .dot-live {
+      width: 8px;
+      height: 8px;
+      background: #22C55E;
+      border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      font-size: clamp(42px, 5.5vw, 72px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      margin-bottom: 24px;
+      animation: fade-up 0.8s ease-out 0.1s both;
+    }
+
+    h1 .accent {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      max-width: 440px;
+      margin-bottom: 40px;
+      animation: fade-up 0.8s ease-out 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      animation: fade-up 0.8s ease-out 0.3s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-family: inherit;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 2px 20px var(--blue-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--blue-glow);
+    }
+
+    .btn-secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+    }
+
+    /* ── Phone mockups ── */
+    .hero-phones {
+      position: relative;
+      height: 560px;
+      animation: fade-up 1s ease-out 0.4s both;
+    }
+
+    .phone {
+      position: absolute;
+      width: 240px;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.06),
+        inset 0 0 0 1px rgba(255,255,255,0.04);
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .phone img {
+      width: 100%;
+      display: block;
+    }
+
+    .phone-1 {
+      top: 0;
+      left: 10%;
+      transform: rotate(-4deg);
+      z-index: 2;
+    }
+
+    .phone-1:hover { transform: rotate(-4deg) translateY(-8px); }
+
+    .phone-2 {
+      top: 40px;
+      right: 5%;
+      transform: rotate(4deg);
+      z-index: 1;
+    }
+
+    .phone-2:hover { transform: rotate(4deg) translateY(-8px); }
+
+    /* ── Stats bar ── */
+    .stats {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stats .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--blue-light);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Features ── */
+    .features { overflow: visible; }
+
+    .section-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--blue);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-dim);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 64px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(74, 123, 247, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+
+    /* ── Showcase (phone screenshots) ── */
+    .showcase {
+      padding: 120px 0;
+    }
+
+    .showcase .container {
+      text-align: center;
+    }
+
+    .showcase-phones {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 64px;
+      perspective: 1200px;
+    }
+
+    .showcase-phone {
+      width: 220px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 24px 64px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.06);
+      transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .showcase-phone:nth-child(1) { transform: rotateY(8deg) scale(0.95); }
+    .showcase-phone:nth-child(2) { transform: scale(1.05); z-index: 2; box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 80px var(--blue-glow); }
+    .showcase-phone:nth-child(3) { transform: rotateY(-8deg) scale(0.95); }
+
+    .showcase-phone:hover {
+      transform: scale(1.08) !important;
+      z-index: 3;
+    }
+
+    .showcase-phone img {
+      width: 100%;
+      display: block;
+    }
+
+    .showcase-caption {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* ── Tech strip ── */
+    .tech {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0;
+      text-align: center;
+    }
+
+    .tech-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .tech-logos {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      transition: color 0.2s;
+    }
+
+    .tech-item:hover { color: var(--text); }
+
+    .tech-item svg {
+      width: 22px;
+      height: 22px;
+      opacity: 0.6;
+    }
+
+    /* ── CTA ── */
+    .cta {
+      text-align: center;
+      padding: 120px 0 140px;
+      position: relative;
+    }
+
+    .cta-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--blue-glow) 0%, transparent 70%);
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .cta h2 {
+      font-size: clamp(36px, 5vw, 56px);
+      margin-bottom: 20px;
+    }
+
+    .cta p {
+      color: var(--text-dim);
+      font-size: 18px;
+      margin-bottom: 40px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-left img {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+    }
+
+    .footer-left span {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── Animations ── */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .hero .container {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        text-align: center;
+      }
+
+      .hero-sub { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+
+      .hero-phones {
+        height: 400px;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .phone { width: 180px; }
+      .phone-1 { left: 5%; }
+      .phone-2 { right: 0; }
+
+      .stats .container { grid-template-columns: repeat(2, 1fr); }
+      .feature-grid { grid-template-columns: 1fr; }
+
+      .showcase-phones {
+        gap: 12px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0 24px;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+      }
+
+      .showcase-phone {
+        min-width: 200px;
+        scroll-snap-align: center;
+        transform: none !important;
+      }
+
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      section { padding: 64px 0; }
+      .hero { min-height: auto; padding: 120px 0 64px; }
+      .hero-phones { height: 320px; }
+      .phone { width: 160px; }
+      .stats .container { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .stat-num { font-size: 28px; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      footer .container { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Constellation dots -->
+  <div class="constellation" aria-hidden="true" id="constellation"></div>
+
+  <!-- Nav -->
+  <nav id="nav">
+    <div class="container">
+      <a href="#" class="nav-brand">
+        <img src="../frontend/public/pwa-512x512.png" alt="BachBoys icon" width="36" height="36">
+        <span>BachBoys</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#showcase">Screenshots</a></li>
+        <li><a href="#tech">Tech</a></li>
+        <li><a href="https://github.com/ben4mn/bachboys" class="nav-cta">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot-live"></span>
+          Open source &middot; Free forever
+        </div>
+        <h1>Plan the<br><span class="accent">legendary</span><br>send-off.</h1>
+        <p class="hero-sub">
+          BachBoys keeps the entire crew aligned. Schedule events, split costs,
+          RSVP, share photos, and get push notifications — all from a single installable app.
+        </p>
+        <div class="hero-actions">
+          <a href="https://github.com/ben4mn/bachboys" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            View on GitHub
+          </a>
+          <a href="#features" class="btn btn-secondary">See Features</a>
+        </div>
+      </div>
+
+      <div class="hero-phones" aria-label="App screenshots showing schedule and payments views">
+        <div class="phone phone-1">
+          <img src="screenshots/schedule-dark.png" alt="BachBoys schedule view in dark theme" width="240" height="520" loading="eager">
+        </div>
+        <div class="phone phone-2">
+          <img src="screenshots/payments-dark.png" alt="BachBoys payments view in dark theme" width="240" height="520" loading="eager">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats reveal">
+    <div class="container">
+      <div>
+        <div class="stat-num">5</div>
+        <div class="stat-label">Core Modules</div>
+      </div>
+      <div>
+        <div class="stat-num">PWA</div>
+        <div class="stat-label">Installable</div>
+      </div>
+      <div>
+        <div class="stat-num">2</div>
+        <div class="stat-label">Themes</div>
+      </div>
+      <div>
+        <div class="stat-num">&lt;1s</div>
+        <div class="stat-label">Load Time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Features</div>
+        <h2>Everything the crew needs.<br>Nothing they don't.</h2>
+        <p class="section-sub">
+          Built for the organizer who doesn't want to manage 47 group chat threads. One app, one source of truth.
+        </p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Event Schedule</h3>
+          <p>Create a full itinerary with times, locations, map links, and per-event costs. Grouped by day, sorted by time.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>Cost Splitting</h3>
+          <p>Even splits, custom amounts, or fixed per-person pricing. Automatic recalculation when attendees change. Per-event paid status.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>RSVP Tracking</h3>
+          <p>Going, maybe, declined — per event. Mandatory events flagged separately. Avatar stacks show who's in at a glance.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <h3>Photo Gallery</h3>
+          <p>Shared photo uploads with image compression. Everyone contributes, everyone sees. No more "send me that pic."</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <h3>Push Notifications</h3>
+          <p>VAPID-powered web push. Admin can notify all or by event. Works even when the app is closed.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Admin Panel</h3>
+          <p>Full control. Manage events, confirm payments, view balances, send notifications, and toggle user roles.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase -->
+  <section class="showcase" id="showcase">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Screenshots</div>
+        <h2>Dark mode. Light mode.<br>Always looks good.</h2>
+        <p class="section-sub" style="margin-left:auto;margin-right:auto;">
+          Designed mobile-first with Tailwind CSS. Installable as a PWA on iOS and Android.
+        </p>
+      </div>
+
+      <div class="showcase-phones reveal">
+        <div class="showcase-phone">
+          <img src="screenshots/schedule-light.png" alt="Schedule in light theme" width="220" height="476" loading="lazy">
+          <div class="showcase-caption">Schedule</div>
+        </div>
+        <div class="showcase-phone">
+          <img src="screenshots/payments-light.png" alt="Payments in light theme" width="220" height="476" loading="lazy">
+          <div class="showcase-caption">Payments</div>
+        </div>
+        <div class="showcase-phone">
+          <img src="screenshots/profile-dark.png" alt="Profile in dark theme" width="220" height="476" loading="lazy">
+          <div class="showcase-caption">Profile</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech -->
+  <div class="tech reveal" id="tech">
+    <div class="container">
+      <div class="tech-label">Built with</div>
+      <div class="tech-logos">
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.31 0-.594.053-.846.158C4.56 2.162 3.94 4.01 4.17 6.59c-2.162.792-3.432 1.932-3.432 3.418 0 1.488 1.27 2.628 3.432 3.418-.23 2.58.39 4.428 2.09 5.098.252.104.536.158.846.158 1.346 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.604 4.887 2.604.31 0 .594-.054.846-.158 1.7-.67 2.32-2.518 2.09-5.098 2.162-.79 3.432-1.93 3.432-3.418 0-1.486-1.27-2.626-3.432-3.418.23-2.58-.39-4.428-2.09-5.098a2.036 2.036 0 0 0-.846-.158z"/></svg>
+          React
+        </div>
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.677.111a6.38 6.38 0 0 1 1.415.44v2.1c-.435-.31-.912-.544-1.43-.703a5.38 5.38 0 0 0-1.662-.247c-.367 0-.645.037-.835.112a.882.882 0 0 0-.413.281.682.682 0 0 0-.124.408c0 .177.062.326.185.445.123.12.329.225.618.315l1.457.403c.866.24 1.487.56 1.866.96.378.4.567.918.567 1.553 0 .607-.164 1.1-.49 1.48-.327.38-.797.66-1.408.836-.612.177-1.349.266-2.21.266-.748 0-1.42-.07-2.016-.21a7.283 7.283 0 0 1-1.637-.585v-2.24c.514.39 1.073.69 1.677.9.604.21 1.18.315 1.73.315.37 0 .654-.046.852-.138a.488.488 0 0 0 .25-.446c0-.197-.09-.358-.273-.48-.182-.124-.494-.253-.935-.39l-1.168-.358c-.875-.27-1.5-.613-1.874-1.03-.375-.417-.562-.971-.562-1.662 0-.56.158-1.045.473-1.453.316-.41.764-.725 1.346-.946.58-.222 1.268-.333 2.064-.333zM8.58 8.062H12v10.5h-2.47V12.65H6.66v5.912H4.19V8.062h2.47v3.278H8.58z"/></svg>
+          TypeScript
+        </div>
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"/></svg>
+          Tailwind
+        </div>
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 18.588a1.529 1.529 0 0 1-1.895-.72l-3.45-4.771-.5-.667-4.003 5.444a1.466 1.466 0 0 1-1.802.708l5.158-6.92-4.798-6.251a1.595 1.595 0 0 1 1.9.666l3.576 4.83 3.596-4.81a1.435 1.435 0 0 1 1.788-.668L21.708 7.9l-2.522 3.283a.666.666 0 0 0 0 .994l4.804 6.412zM.002 11.576l.42-2.075c1.154-4.103 5.858-5.81 9.094-3.27 1.895 1.489 2.368 3.597 2.275 5.973H1.116C.943 16.447 4.005 19.009 7.92 17.7a4.078 4.078 0 0 0 2.582-2.876c.207-.666.548-.78 1.174-.588a5.417 5.417 0 0 1-2.589 3.957 6.272 6.272 0 0 1-7.306-.933 6.575 6.575 0 0 1-1.64-3.858c0-.235-.08-.455-.134-.666A88.33 88.33 0 0 1 0 11.577zm1.127-.286h9.654c-.06-3.076-2.001-5.258-4.59-5.278-2.882-.04-4.944 2.094-5.071 5.264z"/></svg>
+          Express
+        </div>
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-.1691.0344-.3418.0813-.5145.1407 0-.1033.0031-.2097.0031-.3161 0-1.8929-.4329-3.7151-1.2866-5.4194a13.3506 13.3506 0 0 0-3.3705-4.2062C14.3545 1.7557 10.7524.4882 7.536.4882c-.345 0-.6903.0157-1.0321.0438C5.1267-.2827 3.7506-.079 2.9714.6502c-.6167.5765-.9426 1.4288-.9458 2.4654-.0031.3161.0313 .6448.0844.973-1.1217 1.0571-1.8552 2.4685-2.1844 4.1947-.1879 1.0069-.1285 2.0792.1503 3.1515.098.3789.2289.7452.3902 1.0947-.0594.1877-.1126.3755-.1565.5664-.2383 1.0349-.1565 1.9057.2383 2.5254.3073.4862.8088.7515 1.4539.7715.7952.0219 1.6189-.229 2.4622-.7421.232-.1408.4579-.2977.678-.4672a12.3208 12.3208 0 0 0 3.5183 1.4757 13.7091 13.7091 0 0 0 3.1172.3567c1.9655 0 3.8397-.5141 5.5744-1.5296a13.3323 13.3323 0 0 0 3.988-3.7779c.406-.5766.7608-1.1814 1.0666-1.8116a4.0365 4.0365 0 0 0 .6622.0563c.5833 0 1.0637-.1939 1.3803-.566.3448-.3977.4642-.9612.3448-1.6282zM2.2194 3.2442c.5015-.469 1.1185-.637 1.8397-.5012a5.0975 5.0975 0 0 1 .7827.2382A13.2562 13.2562 0 0 0 2.3792 7.398c-.043-.5858-.0275-1.1653.0469-1.7261-.3605-.7264-.4517-1.7073-.207-2.4277z"/></svg>
+          PostgreSQL
+        </div>
+        <div class="tech-item">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 0 0 .186-.186V9.006a.186.186 0 0 0-.186-.186h-2.12a.186.186 0 0 0-.185.186v1.886c0 .103.083.186.186.186zm-2.954-5.43h2.118a.186.186 0 0 0 .186-.186V3.574a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.186v1.888c0 .103.082.186.185.186zm0 2.716h2.118a.187.187 0 0 0 .186-.186V6.29a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.186v1.888c0 .103.082.185.185.186zm-2.93 0h2.12a.186.186 0 0 0 .184-.186V6.29a.185.185 0 0 0-.185-.186H8.1a.186.186 0 0 0-.185.186v1.888c0 .103.083.185.185.186zm-2.964 0h2.119a.186.186 0 0 0 .185-.186V6.29a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.186v1.888c0 .103.084.185.186.186zm5.893 2.715h2.118a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.186v1.887c0 .103.082.185.185.185zm-2.93 0h2.12a.185.185 0 0 0 .184-.185V9.006a.185.185 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.186.186v1.887c0 .103.084.185.186.185zm-2.964 0h2.119a.186.186 0 0 0 .185-.185V9.006a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.186v1.887c0 .103.084.185.186.185zm-2.92 0h2.12a.185.185 0 0 0 .184-.185V9.006a.185.185 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.186.186v1.887c0 .103.083.185.186.185zM23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338 0-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 0 0-.75.748 11.376 11.376 0 0 0 .692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983 0 1.978-.097 2.955-.286a12.3 12.3 0 0 0 3.253-1.15 11.37 11.37 0 0 0 2.416-1.782 13.32 13.32 0 0 0 2.632-3.592c.554-.062 1.024-.162 1.378-.396.292-.191.53-.468.674-.81.064-.152.136-.404.1-.667-.04-.3-.2-.538-.413-.667z"/></svg>
+          Docker
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="cta-glow" aria-hidden="true"></div>
+    <div class="container reveal">
+      <div class="section-label">Open Source</div>
+      <h2>Your party.<br><span class="accent">Your rules.</span></h2>
+      <p>
+        Self-host it, customize it, make it yours.
+        BachBoys is fully open source and free to deploy.
+      </p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a href="https://github.com/ben4mn/bachboys" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          Star on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-left">
+        <img src="../frontend/public/pwa-512x512.png" alt="BachBoys" width="28" height="28">
+        <span>BachBoys &copy; 2026</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/ben4mn/bachboys">Source</a></li>
+        <li><a href="https://github.com/ben4mn/bachboys/issues">Issues</a></li>
+        <li><a href="https://github.com/ben4mn/bachboys#readme">Docs</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    // ── Constellation dots ──
+    (function() {
+      const el = document.getElementById('constellation');
+      const count = 40;
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left = Math.random() * 100 + '%';
+        dot.style.top = Math.random() * 100 + '%';
+        dot.style.animationDelay = (Math.random() * 4) + 's';
+        dot.style.animationDuration = (3 + Math.random() * 3) + 's';
+        el.appendChild(dot);
+      }
+    })();
+
+    // ── Nav scroll ──
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ── Reveal on scroll ──
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ── Smooth anchor scroll ──
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
