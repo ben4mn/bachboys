@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { format, parseISO } from 'date-fns';
+import { formatDateTimeVegas, utcToVegasInputs, vegasToUTC } from '../../utils/timezone';
 import { Plus, Edit2, Trash2, X, Calculator, DollarSign, Calendar } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
@@ -57,10 +57,10 @@ function EventForm({
         location: event.location || '',
         location_url: event.location_url || '',
         event_url: event.event_url || '',
-        start_date: format(parseISO(event.start_time), 'yyyy-MM-dd'),
-        start_time: format(parseISO(event.start_time), 'HH:mm'),
-        end_date: event.end_time ? format(parseISO(event.end_time), 'yyyy-MM-dd') : '',
-        end_time: event.end_time ? format(parseISO(event.end_time), 'HH:mm') : '',
+        start_date: utcToVegasInputs(event.start_time).date,
+        start_time: utcToVegasInputs(event.start_time).time,
+        end_date: event.end_time ? utcToVegasInputs(event.end_time).date : '',
+        end_time: event.end_time ? utcToVegasInputs(event.end_time).time : '',
         is_mandatory: event.is_mandatory,
         total_cost: event.total_cost,
         split_type: event.split_type,
@@ -100,9 +100,9 @@ function EventForm({
         location: data.location || undefined,
         location_url: data.location_url || undefined,
         event_url: data.event_url || undefined,
-        start_time: new Date(`${data.start_date}T${data.start_time}`).toISOString(),
+        start_time: vegasToUTC(data.start_date, data.start_time),
         end_time: data.end_date && data.end_time
-          ? new Date(`${data.end_date}T${data.end_time}`).toISOString()
+          ? vegasToUTC(data.end_date, data.end_time)
           : undefined,
         is_mandatory: data.is_mandatory,
         total_cost: Number(data.total_cost),
@@ -576,7 +576,7 @@ export default function AdminEvents() {
                   {event.category && <Badge>{event.category}</Badge>}
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {format(parseISO(event.start_time), 'EEE, MMM d @ h:mm a')}
+                  {formatDateTimeVegas(event.start_time)}
                 </p>
                 {event.location && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.location}</p>

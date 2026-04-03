@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
+import { formatDateTimeFullVegas } from '../../utils/timezone';
 import { Check, X, Clock, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
@@ -61,7 +61,7 @@ function PaymentRow({
         </div>
         {payment.paid_at && (
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            {format(parseISO(payment.paid_at), 'MMM d, yyyy @ h:mm a')}
+            {formatDateTimeFullVegas(payment.paid_at)}
           </div>
         )}
         {payment.notes && (

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
+import { formatMonthDayVegas } from '../utils/timezone';
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -40,7 +40,7 @@ function PaymentItem({ payment }: { payment: Payment }) {
           {payment.paid_at && (
             <>
               <span>-</span>
-              <span>{format(parseISO(payment.paid_at), 'MMM d')}</span>
+              <span>{formatMonthDayVegas(payment.paid_at)}</span>
             </>
           )}
         </div>
@@ -127,7 +127,8 @@ export default function Payments() {
                               {item.event_title}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {item.notes || format(parseISO(item.event_date), 'MMM d')}
+                              {item.notes || formatMonthDayVegas(item.event_date)}
+                              {item.notes || formatMonthDayVegas(item.event_date)}
                             </div>
                           </div>
                         </div>

@@ -13,6 +13,7 @@ import { useThemeStore } from '../store/themeStore';
 import { updateProfile, updateTripStatus } from '../api/users';
 import { getErrorMessage } from '../api/client';
 import type { TripStatus } from '../types';
+import { vegasToUTC, utcToVegasInputs } from '../utils/timezone';
 
 const tripStatusOptions: { value: TripStatus; label: string; description: string }[] = [
   { value: 'confirmed', label: 'I\'m In!', description: 'Count me in for the party' },
@@ -67,11 +68,11 @@ function TravelDetails() {
   const [isEditing, setIsEditing] = useState(false);
   const [arrivalFlight, setArrivalFlight] = useState(user?.arrival_flight || '');
   const [arrivalDatetime, setArrivalDatetime] = useState(
-    user?.arrival_datetime ? user.arrival_datetime.slice(0, 16) : ''
+    user?.arrival_datetime ? `${utcToVegasInputs(user.arrival_datetime).date}T${utcToVegasInputs(user.arrival_datetime).time}` : ''
   );
   const [departureFlight, setDepartureFlight] = useState(user?.departure_flight || '');
   const [departureDatetime, setDepartureDatetime] = useState(
-    user?.departure_datetime ? user.departure_datetime.slice(0, 16) : ''
+    user?.departure_datetime ? `${utcToVegasInputs(user.departure_datetime).date}T${utcToVegasInputs(user.departure_datetime).time}` : ''
   );
 
   const mutation = useMutation({
@@ -86,17 +87,17 @@ function TravelDetails() {
   const handleSave = () => {
     mutation.mutate({
       arrival_flight: arrivalFlight || null,
-      arrival_datetime: arrivalDatetime ? new Date(arrivalDatetime).toISOString() : null,
+      arrival_datetime: arrivalDatetime ? vegasToUTC(arrivalDatetime.split('T')[0], arrivalDatetime.split('T')[1]) : null,
       departure_flight: departureFlight || null,
-      departure_datetime: departureDatetime ? new Date(departureDatetime).toISOString() : null,
+      departure_datetime: departureDatetime ? vegasToUTC(departureDatetime.split('T')[0], departureDatetime.split('T')[1]) : null,
     });
   };
 
   const handleCancel = () => {
     setArrivalFlight(user?.arrival_flight || '');
-    setArrivalDatetime(user?.arrival_datetime ? user.arrival_datetime.slice(0, 16) : '');
+    setArrivalDatetime(user?.arrival_datetime ? `${utcToVegasInputs(user.arrival_datetime).date}T${utcToVegasInputs(user.arrival_datetime).time}` : '');
     setDepartureFlight(user?.departure_flight || '');
-    setDepartureDatetime(user?.departure_datetime ? user.departure_datetime.slice(0, 16) : '');
+    setDepartureDatetime(user?.departure_datetime ? `${utcToVegasInputs(user.departure_datetime).date}T${utcToVegasInputs(user.departure_datetime).time}` : '');
     setIsEditing(false);
   };
 
@@ -223,7 +224,7 @@ function TravelDetails() {
             <div className="flex items-center justify-between">
               <span className="text-gray-500 dark:text-gray-400" />
               <span className="text-gray-600 dark:text-gray-400 text-xs">
-                {new Date(user.arrival_datetime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                {new Date(user.arrival_datetime).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               </span>
             </div>
           )}
@@ -237,7 +238,7 @@ function TravelDetails() {
             <div className="flex items-center justify-between">
               <span className="text-gray-500 dark:text-gray-400" />
               <span className="text-gray-600 dark:text-gray-400 text-xs">
-                {new Date(user.departure_datetime).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                {new Date(user.departure_datetime).toLocaleString('en-US', { timeZone: 'America/Los_Angeles', weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               </span>
             </div>
           )}

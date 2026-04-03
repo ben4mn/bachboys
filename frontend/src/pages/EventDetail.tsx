@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
 import { MapPin, Clock, DollarSign, ExternalLink, Check, X, HelpCircle } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -9,12 +8,13 @@ import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { LinkedText } from '../components/shared/LinkedText';
 import { getEvent, updateRsvp } from '../api/events';
 import { useAuthStore } from '../store/authStore';
+import { formatTimeVegas, formatDateLongVegas } from '../utils/timezone';
 import type { RsvpStatus } from '../types';
 
 const rsvpOptions: { status: RsvpStatus; label: string; icon: typeof Check }[] = [
   { status: 'confirmed', label: 'Going', icon: Check },
   { status: 'maybe', label: 'Maybe', icon: HelpCircle },
-  { status: 'declined', label: 'Can\'t Go', icon: X },
+  { status: 'declined', label: "Can't Go", icon: X },
 ];
 
 export default function EventDetail() {
@@ -72,11 +72,11 @@ export default function EventDetail() {
               <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               <div>
                 <div className="font-medium dark:text-white">
-                  {format(parseISO(event.start_time), 'EEEE, MMMM d')}
+                  {formatDateLongVegas(event.start_time)}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {format(parseISO(event.start_time), 'h:mm a')}
-                  {event.end_time && ` - ${format(parseISO(event.end_time), 'h:mm a')}`}
+                  {formatTimeVegas(event.start_time)}
+                  {event.end_time && ` - ${formatTimeVegas(event.end_time)}`}
                 </div>
               </div>
             </div>
@@ -189,7 +189,7 @@ export default function EventDetail() {
         {/* Attendees */}
         <Card>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3">
-            {event.is_mandatory ? 'Attendees' : 'Who\'s Going'}
+            {event.is_mandatory ? 'Attendees' : "Who's Going"}
           </h2>
           <div className="space-y-2">
             {attendees.length === 0 ? (

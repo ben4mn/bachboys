@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO, isToday, isTomorrow } from 'date-fns';
 import { MapPin, Clock, Users, ChevronRight } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -8,18 +7,12 @@ import { Badge } from '../components/shared/Badge';
 import { AvatarStack } from '../components/shared/AvatarStack';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { getEvents } from '../api/events';
+import {
+  formatTimeVegas,
+  formatEventDateVegas,
+  getVegasDateKey,
+} from '../utils/timezone';
 import type { Event } from '../types';
-
-function formatEventDate(dateString: string): string {
-  const date = parseISO(dateString);
-  if (isToday(date)) return 'Today';
-  if (isTomorrow(date)) return 'Tomorrow';
-  return format(date, 'EEEE, MMM d');
-}
-
-function formatEventTime(dateString: string): string {
-  return format(parseISO(dateString), 'h:mm a');
-}
 
 function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
   const getRsvpBadge = () => {
@@ -49,9 +42,9 @@ function EventCard({ event, onClick }: { event: Event; onClick: () => void }) {
         <div className="mt-2 space-y-1">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <Clock className="w-4 h-4 flex-shrink-0" />
-            <span>{formatEventTime(event.start_time)}</span>
+            <span>{formatTimeVegas(event.start_time)}</span>
             {event.end_time && (
-              <span className="text-gray-400 dark:text-gray-500">- {formatEventTime(event.end_time)}</span>
+              <span className="text-gray-400 dark:text-gray-500">- {formatTimeVegas(event.end_time)}</span>
             )}
           </div>
 
@@ -93,9 +86,9 @@ export default function Schedule() {
     queryFn: getEvents,
   });
 
-  // Group events by date
+  // Group events by Vegas-local date
   const groupedEvents = events?.reduce((acc, event) => {
-    const dateKey = format(parseISO(event.start_time), 'yyyy-MM-dd');
+    const dateKey = getVegasDateKey(event.start_time);
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(event);
     return acc;
@@ -129,7 +122,7 @@ export default function Schedule() {
         {groupedEvents && Object.entries(groupedEvents).map(([dateKey, dayEvents]) => (
           <div key={dateKey} className="mb-6">
             <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
-              {formatEventDate(dayEvents[0].start_time)}
+              {formatEventDateVegas(dayEvents[0].start_time)}
             </h2>
             <div className="space-y-3">
               {dayEvents.map((event) => (

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
+import { formatFullDateTimeVegas } from '../utils/timezone';
 import { Camera, X, Trash2, ImageIcon } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
@@ -37,7 +37,7 @@ function Lightbox({
             <div className="text-white font-medium text-sm truncate">{photo.display_name}</div>
             <div className="text-gray-400 text-xs">
               {(() => {
-                try { return format(parseISO(photo.created_at), 'MMM d, yyyy · h:mm a'); }
+                try { return formatFullDateTimeVegas(photo.created_at); }
                 catch { return ''; }
               })()}
             </div>

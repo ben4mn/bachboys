@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { format, parseISO } from 'date-fns';
+import { formatDateTimeVegas } from '../../utils/timezone';
 import { Send, Bell, Users, Calendar, Clock, CheckCircle } from 'lucide-react';
 import { Card } from '../../components/shared/Card';
 import { Badge } from '../../components/shared/Badge';
@@ -266,7 +266,7 @@ export default function AdminNotifications() {
                   Sent by {notification.sent_by_name}
                 </span>
                 <span>
-                  {format(parseISO(notification.sent_at), 'MMM d, h:mm a')}
+                  {formatDateTimeVegas(notification.sent_at)}
                 </span>
                 {notification.event_title && (
                   <span>to {notification.event_title} attendees</span>

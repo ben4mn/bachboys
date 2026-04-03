@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Phone, AtSign, Crown, Shield, ChevronDown, UserPlus, Plane, PlaneLanding, PlaneTakeoff } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { formatDateTimeVegas } from '../utils/timezone';
 import { motion } from 'framer-motion';
 import { Header } from '../components/shared/Header';
 import { Card } from '../components/shared/Card';
@@ -183,7 +183,7 @@ function AttendeeCard({
                   <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.arrival_flight)}</span>
                   {user.arrival_datetime && (
                     <span className="text-gray-600 dark:text-gray-400 w-full text-xs pl-6">
-                      {format(parseISO(user.arrival_datetime), 'EEE, MMM d @ h:mm a')}
+                      {formatDateTimeVegas(user.arrival_datetime)}
                     </span>
                   )}
                 </div>
@@ -195,7 +195,7 @@ function AttendeeCard({
                   <span className="text-gray-500 dark:text-gray-400">&middot; {getAirline(user.departure_flight)}</span>
                   {user.departure_datetime && (
                     <span className="text-gray-600 dark:text-gray-400 w-full text-xs pl-6">
-                      {format(parseISO(user.departure_datetime), 'EEE, MMM d @ h:mm a')}
+                      {formatDateTimeVegas(user.departure_datetime)}
                     </span>
                   )}
                 </div>
