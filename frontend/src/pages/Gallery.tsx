@@ -90,7 +90,8 @@ function UploadModal({ onClose, onUpload, isUploading }: {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -135,17 +136,36 @@ function UploadModal({ onClose, onUpload, isUploading }: {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-primary-500 active:border-primary-600 transition-colors"
-            >
-              <Camera className="w-8 h-8 mb-2" />
-              <span className="text-sm font-medium">Tap to select photo</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                className="h-36 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-primary-500 active:border-primary-600 transition-colors"
+              >
+                <ImageIcon className="w-8 h-8 mb-2" />
+                <span className="text-sm font-medium">Camera Roll</span>
+              </button>
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="h-36 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-primary-500 active:border-primary-600 transition-colors"
+              >
+                <Camera className="w-8 h-8 mb-2" />
+                <span className="text-sm font-medium">Take Photo</span>
+              </button>
+            </div>
           )}
 
+          {/* Camera roll picker - no capture attribute so OS shows photo library */}
           <input
-            ref={fileInputRef}
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          {/* Camera capture - uses capture attribute to open camera directly */}
+          <input
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
