@@ -5,7 +5,7 @@ import { Camera, X, Trash2, ImageIcon } from 'lucide-react';
 import { Header } from '../components/shared/Header';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 import { useAuthStore } from '../store/authStore';
-import { getGalleryPhotos, uploadPhoto, deletePhoto } from '../api/gallery';
+import { getGalleryPhotos, uploadPhotos, deletePhoto } from '../api/gallery';
 import type { GalleryPhoto } from '../api/gallery';
 
 function Lightbox({
@@ -82,28 +82,41 @@ function Lightbox({
   );
 }
 
-function UploadModal({ onClose, onUpload, isUploading }: {
+function UploadModal({ onClose, onUpload, isUploading, uploadProgress }: {
   onClose: () => void;
-  onUpload: (file: File, caption: string) => void;
+  onUpload: (files: File[], caption: string) => void;
   isUploading: boolean;
+  uploadProgress: { completed: number; total: number } | null;
 }) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [caption, setCaption] = useState('');
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSelectedFile(file);
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+  const addFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files);
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
+    const newPreviews = newFiles.map((f) => URL.createObjectURL(f));
+    setPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeFile = (index: number) => {
+    URL.revokeObjectURL(previews[index]);
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearAll = () => {
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    setSelectedFiles([]);
+    setPreviews([]);
   };
 
   const handleSubmit = () => {
-    if (!selectedFile) return;
-    onUpload(selectedFile, caption);
+    if (selectedFiles.length === 0) return;
+    onUpload(selectedFiles, caption);
   };
 
   return (
@@ -119,20 +132,42 @@ function UploadModal({ onClose, onUpload, isUploading }: {
 
         <div className="px-5 pb-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Upload Photo</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Upload Photo{selectedFiles.length > 1 ? 's' : ''}
+            </h2>
             <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {preview ? (
-            <div className="relative">
-              <img src={preview} alt="Preview" className="w-full max-h-56 object-contain rounded-xl bg-gray-100 dark:bg-gray-700" />
+          {previews.length > 0 ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                {previews.map((url, i) => (
+                  <div key={i} className="relative aspect-square">
+                    <img src={url} alt="" className="w-full h-full object-cover rounded-lg bg-gray-100 dark:bg-gray-700" />
+                    <button
+                      onClick={() => removeFile(i)}
+                      className="absolute top-1 right-1 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {/* Add more button */}
+                <button
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-primary-500 transition-colors"
+                >
+                  <span className="text-2xl leading-none">+</span>
+                  <span className="text-xs mt-1">Add</span>
+                </button>
+              </div>
               <button
-                onClick={() => { setSelectedFile(null); setPreview(null); }}
-                className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-black/70"
+                onClick={clearAll}
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
               >
-                <X className="w-4 h-4" />
+                Clear all
               </button>
             </div>
           ) : (
@@ -154,23 +189,24 @@ function UploadModal({ onClose, onUpload, isUploading }: {
             </div>
           )}
 
-          {/* Camera roll picker - no capture attribute so OS shows photo library */}
+          {/* Camera roll picker - no capture, multiple selection */}
           <input
             ref={galleryInputRef}
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
-            onChange={handleFileChange}
+            onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
           />
 
-          {/* Camera capture - uses capture attribute to open camera directly */}
+          {/* Camera capture - single photo at a time */}
           <input
             ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
             className="hidden"
-            onChange={handleFileChange}
+            onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
           />
 
           <input
@@ -183,10 +219,19 @@ function UploadModal({ onClose, onUpload, isUploading }: {
 
           <button
             onClick={handleSubmit}
-            disabled={!selectedFile || isUploading}
+            disabled={selectedFiles.length === 0 || isUploading}
             className="btn-primary w-full h-12 text-base font-semibold"
           >
-            {isUploading ? <LoadingSpinner size="sm" /> : 'Upload'}
+            {isUploading ? (
+              <span className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" />
+                {uploadProgress && uploadProgress.total > 1 && (
+                  <span>{uploadProgress.completed}/{uploadProgress.total}</span>
+                )}
+              </span>
+            ) : (
+              selectedFiles.length > 1 ? `Upload ${selectedFiles.length} Photos` : 'Upload'
+            )}
           </button>
         </div>
       </div>
@@ -200,6 +245,7 @@ export default function Gallery() {
   const [page, setPage] = useState(1);
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryPhoto | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number } | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['gallery', page],
@@ -208,10 +254,17 @@ export default function Gallery() {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: ({ file, caption }: { file: File; caption: string }) => uploadPhoto(file, caption),
+    mutationFn: ({ files, caption }: { files: File[]; caption: string }) =>
+      uploadPhotos(files, caption, (completed, total) => {
+        setUploadProgress({ completed, total });
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gallery'] });
       setShowUpload(false);
+      setUploadProgress(null);
+    },
+    onError: () => {
+      setUploadProgress(null);
     },
   });
 
@@ -223,8 +276,8 @@ export default function Gallery() {
     },
   });
 
-  const handleUpload = useCallback((file: File, caption: string) => {
-    uploadMutation.mutate({ file, caption });
+  const handleUpload = useCallback((files: File[], caption: string) => {
+    uploadMutation.mutate({ files, caption });
   }, [uploadMutation]);
 
   const canDeletePhoto = (photo: GalleryPhoto) => {
@@ -328,6 +381,7 @@ export default function Gallery() {
           onClose={() => setShowUpload(false)}
           onUpload={handleUpload}
           isUploading={uploadMutation.isPending}
+          uploadProgress={uploadProgress}
         />
       )}
     </>

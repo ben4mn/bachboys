@@ -44,6 +44,17 @@ export async function uploadPhoto(file: File, caption?: string): Promise<{ photo
   return response.data;
 }
 
+export async function uploadPhotos(
+  files: File[],
+  caption?: string,
+  onProgress?: (completed: number, total: number) => void
+): Promise<void> {
+  for (let i = 0; i < files.length; i++) {
+    await uploadPhoto(files[i], i === 0 ? caption : undefined);
+    onProgress?.(i + 1, files.length);
+  }
+}
+
 export async function deletePhoto(id: string): Promise<void> {
   await apiClient.delete(`/gallery/${id}`);
 }
